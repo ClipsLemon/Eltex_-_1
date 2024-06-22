@@ -16,7 +16,7 @@ build_4:
 	$(CC) $(CFLAGS) main_4.c -o main_4
 
 format:
-	clang-format -i --style=Google src/*.c
+	clang-format -i --style=Google *.c
 
 clean:
 	rm -fr ./main_1 ./main_2 ./main_3 ./main_4
