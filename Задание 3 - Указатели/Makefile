@@ -1,4 +1,4 @@
-CFLAGS = -std=c11 -g
+CFLAGS = -std=c11
 CC = gcc
  
 all: build_1 build_2 build_3 build_4
