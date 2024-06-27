@@ -1,52 +1,50 @@
 #include "../main.h"
 
-void clear_input_buffer() {
+void ClearInputBuffer() {
   while ((getchar()) != '\n')
     ;
 }
 
-void input_number_handler(int *number) {
+void InputNumberHandler(int *number) {
   while (1) {
     // если число считалось, то выходим из цилка
     if (scanf("%d", number)) {
       if (*number < 1 || *number > 5) {
-        printf(
-            "\033[31mТакого пункта в меню нет. Введите цифру "
-            "повторно.\033[0m\n");
+        printf("\033[31mТакого пункта в меню нет. Введите цифру "
+               "повторно.\033[0m\n");
       } else {
         break;
       }
     } else {
-      printf(
-          "\033[31mСкорее всего, вы ввели строку! Введите число "
-          "повторно.\033[0m\n");
-      clear_input_buffer();
+      printf("\033[31mСкорее всего, вы ввели строку! Введите число "
+             "повторно.\033[0m\n");
+      ClearInputBuffer();
     }
   }
-  clear_input_buffer();
+  ClearInputBuffer();
 }
 
-void initialization_list(abonent *abonent_list) {
+void InitializationList(abonent *abonent_list) {
   for (int i = 0; i < LIST_SIZE; i++) {
-    set_default_data(abonent_list[i].name);
-    set_default_data(abonent_list[i].second_name);
-    set_default_data(abonent_list[i].tel);
+    SetDefaultData(abonent_list[i].name);
+    SetDefaultData(abonent_list[i].second_name);
+    SetDefaultData(abonent_list[i].tel);
   }
 }
 
-void set_default_data(char *object_field) {
+void SetDefaultData(char *object_field) {
   for (int i = 0; i < FIELD_SIZE; i++) {
     object_field[i] = '\0';
   }
   // object_field[FIELD_SIZE - 1] = '\0';
 }
 
-int find_empty(const abonent *abonent_list) {
+int FindEmpy(const abonent *abonent_list) {
   // ближайший пустой объект справочника
   int index = -1;
   for (int i = 0; i < LIST_SIZE; i++) {
     // если объект справочника пустой, то берем индекс и выходим из цикла
-    if (is_empty(&(abonent_list[i]))) {
+    if (IsEmpty(&(abonent_list[i]))) {
       index = i;
       break;
     }
@@ -54,7 +52,7 @@ int find_empty(const abonent *abonent_list) {
   return index;
 }
 
-int is_empty(const abonent *abonent) {
+int IsEmpty(const abonent *abonent) {
   /* Конструкция для проверки полей была выбрана
  не просто так. Если у пользователя нет телефона, то эта структура не должна
  считаться пустой. Соответственно, если до этого хоть одно поле было не пустым,
@@ -73,7 +71,7 @@ int is_empty(const abonent *abonent) {
   return code;
 }
 
-size_t get_str_len(const char *str) {
+size_t GetStrLen(const char *str) {
   const char *ptr_str = str;
   size_t len = 0;
 
@@ -84,9 +82,9 @@ size_t get_str_len(const char *str) {
   return len;
 }
 
-void get_string(char *string) {
+void GetString(char *string) {
   fgets(string, FIELD_SIZE, stdin);
-  int str_len = get_str_len(string);
+  int str_len = GetStrLen(string);
   // если мы считали строку и в ней есть \n, значит никаких лишних символов не
   // осталось и нам надо просто убрать \n из итоговой строки
   if (string[str_len - 1] == '\n') {
@@ -94,22 +92,22 @@ void get_string(char *string) {
   } else {
     // в противном случае, если нет \n, значит от повис в буфере и надо его
     // очистить
-    clear_input_buffer();
+    ClearInputBuffer();
   }
 }
 
-void write_abonent(abonent *writeble_abonent) {
+void WriteAbonent(abonent *writeble_abonent) {
   printf("Введите имя абонента: ");
-  get_string(writeble_abonent->name);
+  GetString(writeble_abonent->name);
 
   printf("Введите фамилию абонента: ");
-  get_string(writeble_abonent->second_name);
+  GetString(writeble_abonent->second_name);
 
   printf("Введите телефон абонента: ");
-  get_string(writeble_abonent->tel);
+  GetString(writeble_abonent->tel);
 }
 
-int string_compare(char *str1, char *str2) {
+int StringCompare(char *str1, char *str2) {
   int code = 1;
   if (*str1) {
     while (*str1 || *str2) {

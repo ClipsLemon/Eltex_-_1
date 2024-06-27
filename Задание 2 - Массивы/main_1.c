@@ -7,7 +7,7 @@
  * @param array - константый указатель на массив, чтобы не было возможно его
  * изменить
  */
-void print_array(int size, const int array[size][size]) {
+void PrintArray(int size, const int array[size][size]) {
   for (int r = 0; r < size; r++) {
     for (int c = 0; c < size; c++) {
       printf("%4d ", array[r][c]);
@@ -26,6 +26,6 @@ int main() {
       array[r][c] = (r * n) + c + 1;
     }
   }
-  print_array(n, array);
+  PrintArray(n, array);
   return 0;
 }

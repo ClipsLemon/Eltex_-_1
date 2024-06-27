@@ -5,12 +5,12 @@
  * fflush, однако он считается не безопасным из-за неполной поддержки различными
  * компиляторами и возможности потери данных.
  */
-void clear_input_buffer() {
+void ClearInputBuffer() {
   while ((getchar()) != '\n')
     ;
 }
 
-void input_array_handler(int *array_element) {
+void InputArrayHandler(int *array_element) {
   while (1) {
     // если число считалось, то выходим из цилка
     if (scanf("%d", array_element)) {
@@ -20,7 +20,7 @@ void input_array_handler(int *array_element) {
           "\033[31mОдин из ваших элементов массива содержит строку. \nВведите "
           "новые данные начиная с этого элемента: \033[0m");
     }
-    clear_input_buffer();
+    ClearInputBuffer();
   }
 }
 
@@ -31,7 +31,7 @@ void input_array_handler(int *array_element) {
  * @param array - константый указатель на массив, чтобы не было возможно его
  * изменить
  */
-void print_array(int size, int *array) {
+void PrintArray(int size, int *array) {
   for (int r = 0; r < size; r++) {
     printf("%d ", array[r]);
   }
@@ -46,7 +46,7 @@ int main() {
   // пишем значения в массив только если матрица не одинарная
   printf("Введите данные массива через пробел: ");
   for (int r = 0; r < n; r++) {
-    input_array_handler(array + r);
+    InputArrayHandler(array + r);
   }
 
   for (int r = 0; r < n / 2; r++) {
@@ -55,7 +55,7 @@ int main() {
     array[r] ^= array[n - r - 1];
   }
 
-  print_array(n, array);
+  PrintArray(n, array);
 
   return 0;
 }

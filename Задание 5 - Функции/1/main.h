@@ -12,36 +12,36 @@ typedef struct abonent {
   char tel[FIELD_SIZE];
 } abonent;
 
-void add_abonent(abonent *abonent_list);
-void delete_abonent(abonent *abonent_list);
-void search_by_name(abonent *abonent_list);
-void show_all(abonent *abonent_list);
+void AddAbonent(abonent *abonent_list);
+void DeleteAbonent(abonent *abonent_list);
+void SearchByName(abonent *abonent_list);
+void ShowAll(abonent *abonent_list);
 
 /**
  * @brief Функция обработки ввода. Нужна, для упрощения обработки ввода.
  * Записывает только целые положительные числа.
  * @param number - адрес на переменную, в которую будет осуществляться запись
  */
-void input_number_handler(int *number);
+void InputNumberHandler(int *number);
 
 /**
  * @brief Функция очистки буфера. Можно использовать вместо самописной функции
  * fflush, однако он считается не безопасным из-за неполной поддержки различными
  * компиляторами и возможности потери данных.
  */
-void clear_input_buffer();
+void ClearInputBuffer();
 
 /**
  * @brief Функция выводит инферфейс и осуществляет навигацию по нему
  */
-void print_interface(abonent *abonent_list);
+void PrintInterface(abonent *abonent_list);
 
 /**
  * @brief Функция задает дефолтные значения, полностью заставляет поля \0
  *
  * @param object_field - поле объекта
  */
-void set_default_data(char *object_field);
+void SetDefaultData(char *object_field);
 
 /**
  * @brief Опциональная функция, проводит инициализацию всего списка \0
@@ -49,17 +49,17 @@ void set_default_data(char *object_field);
  *
  * @param abonent_list - список абонентов
  */
-void initialization_list(abonent *abonent_list);
+void InitializationList(abonent *abonent_list);
 
 /**
  * @brief Функция для поиска ближайшего пустого абонента.
  *  Функция проходит по списку и проверяет, является ли объект пустым при помощи
- * функции is_empty.
+ * функции IsEmpty.
  * @param abonent_list - список абонентов
  * @return -1 - дефолтное значение, пустных абонентов нет, все записано. Любое
  * другое значение, кроме -1 - был найден абонент под таким индексом.
  */
-int find_empty(const abonent *abonent_list);
+int FindEmpy(const abonent *abonent_list);
 
 /**
  * @brief Функция проверяет поля абонента на пустоту. Достаточно проверки на \0
@@ -69,14 +69,14 @@ int find_empty(const abonent *abonent_list);
  * @param abonent объект списка абонентов
  * @return 0 - абонент не пустой. 1 - абонент пустой.
  */
-int is_empty(const abonent *abonent);
+int IsEmpty(const abonent *abonent);
 
 /**
  * @brief Функция выводит подсказки и делает запись данных в абонента.
  *
  * @param writeble_abonent - записываемый абонент
  */
-void write_abonent(abonent *writeble_abonent);
+void WriteAbonent(abonent *writeble_abonent);
 
 /**
  * @brief Функция взятия строки. Используется метод fgets. Он записывает, в
@@ -86,7 +86,7 @@ void write_abonent(abonent *writeble_abonent);
  *
  * @param string - адрес на строку, в которую осуществляется запись
  */
-void get_string(char *string);
+void GetString(char *string);
 
 /**
  * @brief Функция возвращающая длину строки. Ищет до терминирующего нуля и
@@ -97,7 +97,7 @@ void get_string(char *string);
  * @param str - строка
  * @return size_t - длина строки
  */
-size_t get_str_len(const char *str);
+size_t GetStrLen(const char *str);
 
 /**
  * @brief Функция осуществляет посимвольное сравнение строк.
@@ -106,6 +106,6 @@ size_t get_str_len(const char *str);
  * @param str2
  * @return 0 - строки не равны, 1 - строки равны.
  */
-int string_compare(char *str1, char *str2);
+int StringCompare(char *str1, char *str2);
 
 #endif

@@ -11,7 +11,7 @@
  * @param str - строка
  * @return size_t - длина строки
  */
-size_t get_str_len(const char *str) {
+size_t GetStrLen(const char *str) {
   const char *ptr_str = str;
   size_t len = 0;
 
@@ -30,10 +30,10 @@ size_t get_str_len(const char *str) {
  *
  * @param string - адрес на строку, в которую осуществляется запись
  */
-void get_string(char *string) {
+void GetString(char *string) {
   fgets(string, STRING_LEN, stdin);
   // нужно, чтобы избавиться от \n
-  string[get_str_len(string) - 1] = '\0';
+  string[GetStrLen(string) - 1] = '\0';
 }
 
 /**
@@ -55,8 +55,8 @@ void get_string(char *string) {
  * @param substring - подстрока
  * @return char* адрес подстроки
  */
-char *find_substring(const char *string, char *substring) {
-  size_t substring_len = get_str_len(substring);
+char *FindSubstring(const char *string, char *substring) {
+  size_t substring_len = GetStrLen(substring);
   // копия нужна, чтобы не проводить лишние операции по взятию длины строки
   size_t cpy_len = substring_len;
   const char *ptr_string = string;
@@ -93,12 +93,12 @@ int main(void) {
   char substring[STRING_LEN];
 
   printf("Введите строку (не более 100 символов): ");
-  get_string(string);
+  GetString(string);
 
   printf("Введите искомую подстроку (не более 100 символов): ");
-  get_string(substring);
+  GetString(substring);
 
-  char *index = find_substring(string, substring);
+  char *index = FindSubstring(string, substring);
 
   printf("Вывод начиная с индекса искомой подстроки: %s\n", index);
   return 0;

@@ -10,7 +10,7 @@
  * fflush, однако он считается не безопасным из-за неполной поддержки различными
  * компиляторами и возможности потери данных.
  */
-void clear_input_buffer() {
+void ClearInputBuffer() {
   while ((getchar()) != '\n')
     ;
 }
@@ -30,7 +30,7 @@ void clear_input_buffer() {
  * @param index - целевой бит
  * @return int
  */
-int check_bit(const int *number, int index) {
+int CheckBit(const int *number, int index) {
   return ((*number) & (1 << index)) != 0;
 }
 
@@ -44,13 +44,13 @@ int check_bit(const int *number, int index) {
  * @param which_is_colored - показывает, какой байт будет выделен цветом. По
  * умолчанию NO_ONE
  */
-void print_binary(const int *number, int which_is_colored) {
+void PrintBinary(const int *number, int which_is_colored) {
   for (int byte = (int)sizeof(int) - 1; byte >= 0; byte--) {
     if (which_is_colored == byte) {
       printf("\033[43m");
     }
     for (int bit = BYTE_SIZE - 1; bit >= 0; bit--) {
-      printf("%d", check_bit(number, BYTE_SIZE * byte + bit));
+      printf("%d", CheckBit(number, BYTE_SIZE * byte + bit));
     }
     printf("\033[0m");
     printf(" ");
@@ -63,7 +63,7 @@ void print_binary(const int *number, int which_is_colored) {
  * Записывает только целые положительные числа.
  * @param number - адрес на переменную, в которую будет осуществляться запись
  */
-void input_number_handler(int *number) {
+void InputNumberHandler(int *number) {
   while (1) {
     printf("Введите число: ");
     // если число считалось, то выходим из цилка
@@ -72,7 +72,7 @@ void input_number_handler(int *number) {
     } else {
       printf("\033[31mСкорее всего, вы ввели строку! Введите число "
              "повторно.\033[0m\n");
-      clear_input_buffer();
+      ClearInputBuffer();
     }
   }
 }
@@ -91,7 +91,7 @@ int main() {
   // число, которое выступает в качестве третьего байта
   int third_byte;
   while (1) { // 1 while
-    input_number_handler(&a);
+    InputNumberHandler(&a);
     if (a < 0) {
       printf("\033[31mВы ввели отрицательное число! Введите число "
              "повторно.\033[0m\n");
@@ -99,7 +99,7 @@ int main() {
       // снова замкнутый цикл для корректного ввода числа
       while (1) { // 2 while
         printf("Введите число в диапазоне от 0 до 255.\n");
-        input_number_handler(&third_byte);
+        InputNumberHandler(&third_byte);
         if (third_byte < 0 || third_byte > 255) {
           printf("\033[31mЛибо вы ввели отрицательное число, либо число больше "
                  "255! "
@@ -109,13 +109,13 @@ int main() {
         }
       }
       printf("Изначальное число: \t\t");
-      print_binary(&a, 2);
+      PrintBinary(&a, 2);
       printf("Число из которого берем байт: \t");
-      print_binary(&third_byte, 0);
+      PrintBinary(&third_byte, 0);
 
       for (int bit = 0; bit < BYTE_SIZE; bit++) {
         // сначала проверяем, задан ли бит
-        if (check_bit(&third_byte, bit)) {
+        if (CheckBit(&third_byte, bit)) {
           // если задан, заменяем бит
           set_bit(&a, CHANGED_BYTE * BYTE_SIZE + bit);
           // если не задан, сбрасываем бит
@@ -124,7 +124,7 @@ int main() {
         }
       }
       printf("Число после обработки: \t\t");
-      print_binary(&a, 2);
+      PrintBinary(&a, 2);
 
       break; // 1 while exit
     }

@@ -8,7 +8,7 @@
  * fflush, однако он считается не безопасным из-за неполной поддержки различными
  * компиляторами и возможности потери данных.
  */
-void clear_input_buffer() {
+void ClearInputBuffer() {
   while ((getchar()) != '\n')
     ;
 }
@@ -44,11 +44,7 @@ void clear_input_buffer() {
  * @param index - целевой бит
  * @return int
  */
-int check_bit_int(const int *number, int index) {
-  return ((*number) & (1 << index)) != 0;
-}
-
-int check_bit_char(const char *number, int index) {
+int CheckBitInt(const int *number, int index) {
   return ((*number) & (1 << index)) != 0;
 }
 
@@ -62,13 +58,13 @@ int check_bit_char(const char *number, int index) {
  * @param which_is_colored - показывает, какой байт будет выделен цветом. По
  * умолчанию NO_ONE
  */
-void print_binary(const int *number, int which_is_colored) {
+void PrintBinary(const int *number, int which_is_colored) {
   for (int byte = (int)sizeof(int) - 1; byte >= 0; byte--) {
     if (which_is_colored == byte) {
       printf("\033[43m");
     }
     for (int bit = BYTE_SIZE - 1; bit >= 0; bit--) {
-      printf("%d", check_bit_int(number, BYTE_SIZE * byte + bit));
+      printf("%d", CheckBitInt(number, BYTE_SIZE * byte + bit));
     }
     printf("\033[0m");
     printf(" ");
@@ -81,17 +77,16 @@ void print_binary(const int *number, int which_is_colored) {
  * Записывает только целые положительные числа.
  * @param number - адрес на переменную, в которую будет осуществляться запись
  */
-void input_number_handler(int *number) {
+void InputNumberHandler(int *number) {
   while (1) {
     printf("Введите число: ");
     // если число считалось, то выходим из цилка
     if (scanf("%d", number)) {
       break;
     } else {
-      printf(
-          "\033[31mСкорее всего, вы ввели строку! Введите число "
-          "повторно.\033[0m\n");
-      clear_input_buffer();
+      printf("\033[31mСкорее всего, вы ввели строку! Введите число "
+             "повторно.\033[0m\n");
+      ClearInputBuffer();
     }
   }
 }
@@ -115,20 +110,19 @@ int main(void) {
   Для выключения варнинга, при компиляци надо использовать флаг
   -Wincompatible-pointer-types.
   */
-  char *ptr_a = &a;
-  while (1) {  // 1 while
-    input_number_handler(&a);
+  char *ptr_a = (char *)&a;
+  while (1) { // 1 while
+    InputNumberHandler(&a);
 
     // снова замкнутый цикл для корректного ввода числа в пределах байта
-    while (1) {  // 2 while
+    while (1) { // 2 while
       printf("Введите число в диапазоне от 0 до 255.\n");
-      input_number_handler(&third_byte);
+      InputNumberHandler(&third_byte);
       if (third_byte < 0 || third_byte > 255) {
-        printf(
-            "\033[31mЛибо вы ввели отрицательное число, либо число больше "
-            "255! Введите число повторно.\033[0m\n");
+        printf("\033[31mЛибо вы ввели отрицательное число, либо число больше "
+               "255! Введите число повторно.\033[0m\n");
       } else {
-        break;  // 2 while exit
+        break; // 2 while exit
       }
     }
     // копируем значение для вывода к сравнению
@@ -138,19 +132,19 @@ int main(void) {
 
     printf("\033[46mВ двоичной системе счисления:\033[0m\n");
     printf("Изначальное число: \t\t");
-    print_binary(&cpy_a, 2);
+    PrintBinary(&cpy_a, 2);
     printf("Число из которого берем байт: \t");
-    print_binary(&third_byte, 0);
+    PrintBinary(&third_byte, 0);
 
     printf("Число после обработки: \t\t");
-    print_binary(&a, 2);
+    PrintBinary(&a, 2);
 
     printf("\033[46mВ десятичной системе счисления:\033[0m\n");
     printf("Изначальное число: \t\t%d\n", cpy_a);
     printf("Число из которого берем байт: \t%d\n", third_byte);
     printf("Число после обработки: \t\t%d\n", a);
 
-    break;  // 1 while exit
+    break; // 1 while exit
   }
 
   return 0;

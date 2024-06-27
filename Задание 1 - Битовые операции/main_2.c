@@ -7,7 +7,7 @@
  * fflush, однако он считается не безопасным из-за неполной поддержки различными
  * компиляторами и возможности потери данных.
  */
-void clear_input_buffer() {
+void ClearInputBuffer() {
   while ((getchar()) != '\n')
     ;
 }
@@ -28,7 +28,7 @@ void clear_input_buffer() {
  * @param bit - целевой бит
  * @return int
  */
-int check_bit(const int *number, const int *byte, const int *bit) {
+int CheckBit(const int *number, const int *byte, const int *bit) {
   return ((*number) & (1 << (*byte * BYTE_SIZE + *bit))) != 0;
 }
 
@@ -40,10 +40,10 @@ int check_bit(const int *number, const int *byte, const int *bit) {
  *
  * @param number - константный указатель на число
  */
-void print_binary(const int *number) {
+void PrintBinary(const int *number) {
   for (int byte = (int)sizeof(int) - 1; byte >= 0; byte--) {
     for (int bit = BYTE_SIZE - 1; bit >= 0; bit--) {
-      printf("%d", check_bit(number, &byte, &bit));
+      printf("%d", CheckBit(number, &byte, &bit));
     }
     printf(" ");
   }
@@ -56,19 +56,17 @@ int main() {
     printf("Введите число: ");
     if (scanf("%d", &a)) {
       if (a > 0) {
-        printf(
-            "\033[31mВы ввели положительное число! Введите число "
-            "повторно.\033[0m\n");
+        printf("\033[31mВы ввели положительное число! Введите число "
+               "повторно.\033[0m\n");
       } else {
         printf("Ваше число в двоичной системе счисления: ");
-        print_binary(&a);
+        PrintBinary(&a);
         break;
       }
     } else {
-      printf(
-          "\033[31mСкорее всего, вы ввели строку! Введите число "
-          "повторно.\033[0m\n");
-      clear_input_buffer();
+      printf("\033[31mСкорее всего, вы ввели строку! Введите число "
+             "повторно.\033[0m\n");
+      ClearInputBuffer();
     }
   }
 
