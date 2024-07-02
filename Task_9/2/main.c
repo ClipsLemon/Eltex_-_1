@@ -93,7 +93,7 @@ int main(void) {
       // если пользователь решил перейти в папку, то меняем дриекторию
     } else if (ch == '\n') {
       ChangeDir(&window_list[current_window], &dir_changed, home_path);
-    } else if (ch == 'c') {
+    } else if (ch == '\t') {
       dir_changed = 1;
       current_window =
           current_window == LEFT_WINDOW ? RIGHT_WINDOW : LEFT_WINDOW;
