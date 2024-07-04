@@ -50,7 +50,7 @@ void PrintPath(struct MyWin *win, char *home_path);
 
 void FreeDirList(struct MyWin *win);
 
-void ChangeDir(struct MyWin *win, int *dir_changed_ptr, char *home_path);
+void ChangeDir(struct MyWin *win, int *dir_changed_ptr);
 
 void InitWin(struct MyWin *win, int row, int col, int y, int x);
 
@@ -67,10 +67,10 @@ void PrintDir(struct MyWin *win, char *home_path);
  * измененный путь Сначала функция находит последний слэш, затем идет от него и
  * до конца строки (ближайшего \0) проставляет \0
  */
-void PathDeleteDir(char *path, char *home_path);
+void PathDeleteDir(char *path);
 
 /**
- * @brief Функция допавляет в путь папку в которую перешел пользователь
+ * @brief Функция добавляет в путь папку в которую перешел пользователь
  *
  * @param path - текущий путь
  * @param added_dir - папка, в которую переходит пользователь

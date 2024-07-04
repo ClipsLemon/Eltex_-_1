@@ -1,6 +1,6 @@
 #include "../main.h"
 
-void ChangeDir(struct MyWin *win, int *dir_changed_ptr, char *home_path) {
+void ChangeDir(struct MyWin *win, int *dir_changed_ptr) {
   struct dirent **tmp_dir_list;
   int tmp_len = 0;
   char path_copy[PATH_LEN];
@@ -30,7 +30,7 @@ void ChangeDir(struct MyWin *win, int *dir_changed_ptr, char *home_path) {
       if (access(path_copy, R_OK) == 0) {
         tmp_len = scandir(path_copy, &tmp_dir_list, 0, alphasort);
         if (tmp_len != -1) {
-          PathDeleteDir(win->path, home_path);
+          PathDeleteDir(win->path);
           *dir_changed_ptr = 1;
         }
         for (int i = 0; i < tmp_len; i++) {

@@ -1,7 +1,6 @@
 #include "../main.h"
 
-
-void PathDeleteDir(char *path, char *home_path) {
+void PathDeleteDir(char *path) {
   if (strcmp(path, "/")) {
     int last_slash = 0;
     for (int i = 0; path[i]; i++) {
@@ -11,7 +10,7 @@ void PathDeleteDir(char *path, char *home_path) {
     }
     // если мы стоим на папке /home к примеру, то надо перейти в /, значит / не
     // должно быть затерто
-    if (strcmp(path, home_path) == 0) {
+    if (last_slash == 0) {
       last_slash++;
     }
     // идем от последнего слэша до конца строки
@@ -21,8 +20,9 @@ void PathDeleteDir(char *path, char *home_path) {
   }
 }
 
-
 void PathAddDir(char *path, char *added_dir) {
-  strcat(path, "/");
+  if (strcmp(path, "/") != 0) {
+    strcat(path, "/");
+  }
   strcat(path, added_dir);
 }
