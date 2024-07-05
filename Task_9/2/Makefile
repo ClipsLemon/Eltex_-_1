@@ -1,9 +1,11 @@
-
-
-CC = gcc
+CC = gcc -g
 
 SRC_DIR = src
 OBJ_DIR = objects
+INTERFACES_DIR = interface
+FILES_FUNC = files_func
+DIR_FUNC = dir_func
+
 
 # Получение имен подкаталогов в директории SRC_DIR
 SUBDIRS := $(shell find $(SRC_DIR) -type d)
@@ -16,7 +18,7 @@ OBJS := $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRCS))
 
 
 
-all: clean $(OBJS) build run
+all: $(OBJS) build run
 
 # компиляци файлов папки src
 $(OBJ_DIR)/%.o: %.c
@@ -25,20 +27,20 @@ $(OBJ_DIR)/%.o: %.c
 
 build:
 	$(CC) -c main.c -o main.o
-	$(CC) $(OBJ_DIR)/$(SRC_DIR)/*.o ./main.o -lncurses -o main
+	$(CC) $(OBJ_DIR)/$(SRC_DIR)/*.o $(OBJ_DIR)/$(SRC_DIR)/$(INTERFACES_DIR)/*.o $(OBJ_DIR)/$(SRC_DIR)/$(FILES_FUNC)/*.o $(OBJ_DIR)/$(SRC_DIR)/$(DIR_FUNC)/*.o ./main.o -lncurses -o manager
 
 run:
-	./main
+	./manager
 
 format:
 	clang-format -i --style=Google src/*.c *.c *.h
 
 valgrind_test: clean $(OBJS) build
-	valgrind --tool=memcheck --leak-check=full --track-origins=yes -s ./main 
+	valgrind --tool=memcheck --leak-check=full --track-origins=yes -s ./manager 
 
 leaks_test: clean $(OBJS) build
-	leaks -atExit -- ./main
+	leaks -atExit -- ./manager
 
 clean:
-	rm -fr ./$(OBJ_DIR)/$(SRC_DIR) ./main.o
-	rm -fr ./main
+	rm -fr ./$(OBJ_DIR)/$(SRC_DIR) ./manager ./main.o
+	rm -fr ./manager
