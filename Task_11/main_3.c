@@ -94,7 +94,7 @@ void *ThreadCustomer(void *customer) {
   while (customer_ptr->customer_need > 0) {
     // ищем свободный магазин с продуктами
     for (int i = 0; i < SHOP_NUMBER && customer_ptr->customer_need != 0; i++) {
-      if (shop_list[i].is_busy == FREE && shop_list[i].products > 0) {
+      if (shop_list[i].is_busy == FREE && shop_list[i].products != 0) {
         pthread_mutex_lock(&m1);
         shop_list[i].is_busy = BUSY;
         tmp_need = customer_ptr->customer_need;

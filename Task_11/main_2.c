@@ -25,6 +25,8 @@ int main(void) {
     pthread_create(&threads[i], NULL, ThreadCalc, NULL);
   }
 
+  printf("calculating...\n");
+
   for (int i = 0; i < NUMBER_OF_THREADS; i++) {
     pthread_join(threads[i], NULL);
   }
