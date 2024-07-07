@@ -15,8 +15,10 @@ void FindProgram(char **argument_array) {
       поставив на пятый char '\0' можно будет заново провести конкатенацию
       путей
     */
-    path[5] = '\0';
+    ClearString(path, PROGRAM_NAME_LEN);
+    ConcatString(path, OPTIONAL_BIN_DIR);
     ConcatString(path, argument_array[0]);
+
     if (access(path, 0) == 0) {
       file_finded = 1;
     }
