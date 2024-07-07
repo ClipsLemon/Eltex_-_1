@@ -53,6 +53,5 @@ git: clean
 
 clean:
 	rm -fr ./$(OBJ_DIR)/* ./main ./main.o
-	rm -fr ./main
-	rm -fr ./main_1.o ./main_1
+	rm -fr ./*.o ./main_1 ./main_3
 	rm -fr ./client ./server ./pipe_fifo
