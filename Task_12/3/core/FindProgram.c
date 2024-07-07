@@ -24,8 +24,10 @@ void CheckProgram(char **programname, char *path) {
 
 void FindProgram(char **program1, char **program2) {
   char path1[PROGRAM_NAME_LEN] = BASE_BIN_DIR;
-  int child_pid = 0;
+  pid_t child_pid = 0;
   int status = 0;
+
+  char buff[100];
 
   CheckProgram(program1, path1);
   int p[2];
@@ -48,10 +50,11 @@ void FindProgram(char **program1, char **program2) {
         execv(path1, program1);
         exit(1);
       } else {
-        wait(&status);
+        waitpid(child_pid, &status, 0);
         close(p[1]);
+        read(p[0], buff, 99);
         if (path2) {
-          printf("Программа была найдена = %s\n", path2);
+          // printf("Программа была найдена = %s\n", path2);
 
           dup2(p[0], STDIN_FILENO);
           child_pid = fork();
@@ -59,7 +62,7 @@ void FindProgram(char **program1, char **program2) {
             execv(path2, program2);
             exit(1);
           }
-          wait(&status);
+          waitpid(child_pid, &status, 0);
           close(p[0]);
         }
       }
