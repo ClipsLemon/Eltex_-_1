@@ -1,4 +1,4 @@
-CC = gcc
+CC = gcc -g
 
 SRC_DIR = core
 OBJ_DIR = objects
