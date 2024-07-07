@@ -34,36 +34,37 @@ void FindProgram(char **program1, char **program2) {
     CheckProgram(program2, path2);
   }
 
-
-
   // если файл был найден, порождаем процесс
   if (path1) {
     printf("Программа была найдена = %s\n", path1);
-    printf(" = %s\n", program1[0]);
 
     if (pipe(p)) {
       perror("ошибка канала");
       exit(1);
-    }else{
+    } else {
       dup2(p[1], STDOUT_FILENO);
       child_pid = fork();
-      if(child_pid == 0){
+      if (child_pid == 0) {
         execv(path1, program1);
         exit(1);
-      }else{
+      } else {
         wait(&status);
-        if (path2){
+        close(p[1]);
+        if (path2) {
+          printf("Программа была найдена = %s\n", path2);
+
           dup2(p[0], STDIN_FILENO);
           child_pid = fork();
-          if(child_pid == 0){
+          if (child_pid == 0) {
             execv(path2, program2);
             exit(1);
           }
           wait(&status);
+          close(p[0]);
         }
       }
     }
-      
+
   } else {
     printf("Такой программы не найдено!\n");
   }

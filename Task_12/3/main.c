@@ -44,7 +44,7 @@ int main() {
           printf("\'%s\'\n", second_program[i]);
         }
         FindProgram(first_program, second_program);
-        
+
       } else if (array_len == 2) {
         first_program = LineParser(argument_array[0], ' ', &first_len);
         for (int i = 0; i < first_len; i++) {
