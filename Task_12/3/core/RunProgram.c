@@ -22,12 +22,11 @@ void CheckProgram(char **programname, char *path) {
   }
 }
 
-void FindProgram(char **program1, char **program2) {
+void RunLine(char **program1, char **program2) {
   char path1[PROGRAM_NAME_LEN] = BASE_BIN_DIR;
   pid_t child_pid = 0;
   int status = 0;
 
-  char buff[100];
 
   CheckProgram(program1, path1);
   int p[2];
@@ -36,34 +35,41 @@ void FindProgram(char **program1, char **program2) {
     CheckProgram(program2, path2);
   }
 
-  // если файл был найден, порождаем процесс
-  if (path1) {
-    printf("Программа была найдена = %s\n", path1);
-
+  if (program2 == NULL) {
+    if (path1) {
+      child_pid = fork();
+      if (child_pid == 0) {
+        dup2(p[1], STDOUT_FILENO);
+        execv(path1, program1);
+        exit(1);
+      }
+      wait(&status);
+    } else {
+      printf("Такой программы не найдено!\n");
+    }
+  } else if (path1) {
     if (pipe(p)) {
       perror("ошибка канала");
       exit(1);
     } else {
-      dup2(p[1], STDOUT_FILENO);
       child_pid = fork();
       if (child_pid == 0) {
+        dup2(p[1], STDOUT_FILENO);
         execv(path1, program1);
         exit(1);
-      } else {
+      } else if (child_pid != -1) {
         waitpid(child_pid, &status, 0);
         close(p[1]);
-        read(p[0], buff, 99);
         if (path2) {
-          // printf("Программа была найдена = %s\n", path2);
-
-          dup2(p[0], STDIN_FILENO);
           child_pid = fork();
           if (child_pid == 0) {
+            dup2(p[0], STDIN_FILENO);
             execv(path2, program2);
             exit(1);
+          } else if (child_pid != -1) {
+            waitpid(child_pid, &status, 0);
+            close(p[0]);
           }
-          waitpid(child_pid, &status, 0);
-          close(p[0]);
         }
       }
     }

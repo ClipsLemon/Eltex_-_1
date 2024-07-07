@@ -19,11 +19,10 @@ int main(void) {
     printf("Сообщение дочернего процесса: %s\n", buf);
     exit(0);
   }
-    close(p[0]);
-    sprintf(buf, "Hi!");
-    write(p[1], buf, strlen(buf) + 1);
-    close(p[1]);
-    
+  close(p[0]);
+  sprintf(buf, "Hi!");
+  write(p[1], buf, strlen(buf) + 1);
+  close(p[1]);
 
   exit(0);
 }

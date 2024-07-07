@@ -48,7 +48,7 @@ void RemoveNewLineSymbol(char *string);
  * @param argument_array - массив указателей на строки с распарсенным
  * аргументами
  */
-void FindProgram(char **argument_array1, char **argument_array2);
+void RunLine(char **argument_array1, char **argument_array2);
 
 /**
  * @brief Функция конкатенации. Пишет начиная с '\0' dst и после конкатенации

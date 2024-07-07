@@ -37,26 +37,15 @@ int main() {
       if (array_len == 3) {
         first_program = LineParser(argument_array[0], ' ', &first_len);
         second_program = LineParser(argument_array[1], ' ', &second_len);
-        for (int i = 0; i < first_len; i++) {
-          printf("\'%s\'\n", first_program[i]);
-        }
-        for (int i = 0; i < second_len; i++) {
-          printf("\'%s\'\n", second_program[i]);
-        }
-        FindProgram(first_program, second_program);
+        RunLine(first_program, second_program);
+        RemoveArgument(first_program, first_len);
+        RemoveArgument(second_program, second_len);
 
       } else if (array_len == 2) {
         first_program = LineParser(argument_array[0], ' ', &first_len);
-        for (int i = 0; i < first_len; i++) {
-          printf("\'%s\'\n", first_program[i]);
-        }
-        FindProgram(first_program, NULL);
+        RunLine(first_program, NULL);
+        RemoveArgument(first_program, first_len);
       }
-
-      // находим программу
-      // FindProgram(argument_array);
-      // дожидаемся окончания процесса
-      // wait(&status);
 
       // после чистим ее строку и память
       ClearString(program_line, PROGRAM_NAME_LEN + FLAGS_LEN);
