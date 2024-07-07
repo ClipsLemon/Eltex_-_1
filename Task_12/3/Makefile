@@ -41,6 +41,11 @@ valgrind_test: clean $(OBJS) build
 leaks_test: clean $(OBJS) build
 	leaks -atExit -- ./main
 
+git: clean
+	git add -A
+	git commit -m "authomatic commit for test"
+	git push origin main
+
 clean:
 	rm -fr ./$(OBJ_DIR)/* ./main ./main.o
 	rm -fr ./main

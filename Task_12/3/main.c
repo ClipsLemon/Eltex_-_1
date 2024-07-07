@@ -50,7 +50,7 @@ int main() {
         for (int i = 0; i < first_len; i++) {
           printf("\'%s\'\n", first_program[i]);
         }
-        FindProgram(argument_array, NULL);
+        FindProgram(first_program, NULL);
       }
 
       // находим программу
