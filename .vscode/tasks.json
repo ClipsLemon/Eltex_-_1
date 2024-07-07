@@ -1,0 +1,34 @@
+// {
+//   "version": "2.0.0",
+//   "tasks": [
+//     {
+//       "label": "build",
+//       "type": "shell",
+//       "command": "make --directory=Задание\\ 4\\ -\\ Структуры/",
+//       "group": {
+//         "kind": "build",
+//         "isDefault": true
+//       },
+//       "problemMatcher": [
+//         "$gcc"
+//       ]
+//     }
+//   ]
+// }
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "shell",
+      "command": "gcc -g3 -fno-stack-protector -no-pie Задание\\ 5\\ -\\ Функции/main.c -o Задание\\ 5\\ -\\ Функции/main",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    }
+  ]
+}

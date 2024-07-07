@@ -1,0 +1,47 @@
+  // {
+  //   "version": "0.2.0",
+  //   "configurations": [
+  //     {
+  //       "type": "cppdbg",
+  //       "request": "launch",
+  //       "name": "Debug",
+  //       "program": "${workspaceFolder}/Задание 4 - Структуры/main",
+  //       "args": [],
+  //       "cwd": "${workspaceFolder}/Задание 4 - Структуры/"
+  //     }
+  //   ]
+  // }
+  {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "C/C++: GDB запуск",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "${workspaceFolder}/Задание 5 - Функции/main",
+        "args": [],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+          {
+            "description": "Включить pretty-printing для gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ],
+        "preLaunchTask": "build",
+        "miDebuggerPath": "/usr/bin/gdb",
+        "logging": {
+          "trace": true,
+          "traceResponse": true,
+          "engineLogging": true
+        },
+        "launchCompleteCommand": "exec-run",
+        "customLaunchSetupCommands": [],
+        "internalConsoleOptions": "openOnSessionStart"
+      }
+    ]
+  }

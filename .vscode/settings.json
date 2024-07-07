@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "locale.h": "c",
+    "stdio.h": "c",
+    "main.h": "c"
+  }
+}
