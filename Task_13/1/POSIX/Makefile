@@ -5,8 +5,8 @@ GCC = gcc
 all: clean build
 
 build:
-	$(GCC) client.c -o client
-	$(GCC) server.c -o server
+	$(GCC) client.c -o client -lrt
+	$(GCC) server.c -o server -lrt
 
 
 format:
