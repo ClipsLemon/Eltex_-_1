@@ -1,7 +1,5 @@
 GCC = gcc
 
-
-
 all: clean build
 
 build:

@@ -5,6 +5,7 @@
 #define THREADS_COUNT 5
 
 void* PrintThreadIndex(void* arg) { printf("Thread #: %d\n", *((int*)arg)); }
+
 int main(void) {
   pthread_t threads[THREADS_COUNT];
   int index_array[THREADS_COUNT];
