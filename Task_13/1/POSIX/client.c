@@ -27,10 +27,8 @@ int main() {
   attr.mq_msgsize = 256;
   attr.mq_curmsgs = 0;
 
-  mqdes_server =
-      mq_open(QUEUE_SERVER, O_CREAT | O_RDWR, S_IWUSR | S_IRUSR, &attr);
-  mqdes_client =
-      mq_open(QUEUE_CLIENT, O_CREAT | O_RDWR, S_IWUSR | S_IRUSR, &attr);
+  mqdes_server = mq_open(QUEUE_SERVER, O_RDWR, S_IWUSR | S_IRUSR, &attr);
+  mqdes_client = mq_open(QUEUE_CLIENT, O_RDWR, S_IWUSR | S_IRUSR, &attr);
 
   mq_receive(mqdes_client, message, sizeof(message), &priority);
 

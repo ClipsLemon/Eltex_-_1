@@ -1,5 +1,5 @@
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef CLIENT_H
+#define CLIENT_H
 
 #include <errno.h>
 #include <mqueue.h>
@@ -61,21 +61,17 @@
 */
 #define SHUTDOWN_SERVER_QUEUE "/shutdown"
 
-#define DEFAULT_OFLGAS (O_CREAT | O_RDWR)
+#define DEFAULT_OFLGAS (O_RDONLY)
 #define DEFAULT_MODE (S_IWUSR | S_IRUSR)
 
 typedef struct {
-  // -1 - значит пользователя не существует
   int last_message_index;
   char username[USERNAME_LEN];
-  // + на / в начале названия
-  char queue_name[USERNAME_LEN + 1];
   mqd_t mqdes_client;
 } User;
 
 typedef struct {
   char username[USERNAME_LEN];
-  char datetime[DATE_TIME_SIZE];
   char message[CL_MESSAGE_LEN];
 } Message;
 
@@ -84,39 +80,24 @@ typedef struct {
   char username[USERNAME_LEN];
 } ServiceMessage;
 
-// ------------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ----------------
-
-extern User user_list[USERS_MAX];
-extern pthread_mutex_t m1;
-
-extern mqd_t mqdes_service;
 extern mqd_t mqdes_cl_message;
-// сюда отправляется сообщение о необходимости обновить у всех клиентов историю
-// чата
-extern mqd_t mqdes_send;
-extern mqd_t mqdes_shutdown;
-extern int history_index;
 
-extern Message chat_history[HISTORY_LEN];
-
-// ----------------------------------------------------
-
-void DeleteClient(char *clientname);
-int AddClient(char *clientname);
-void ParseClientMessage(char *message);
 /*
 Функция создает очередь и обрабатывает ошибки связанные с ее созданием*/
-mqd_t QueueOpen(char *queue_name, int oflag, mode_t mode, int message_len,
-                int number_of_messages);
+mqd_t QueueConnect(char *queue_name, int oflag, mode_t mode, int message_len,
+                   int number_of_messages);
 
 /*
 Функция закрывает очередь и обрабатыват ошибки связанные с ее закрытием
 */
-void QueueClose(mqd_t queue_id, char *queue_name);
+void QueueDisconnect(mqd_t queue_id, char *queue_name);
+
+void GetName(char *string);
+void ClearString(char *string, int len);
+void RemoveNewLineSymbol(char *string);
+void CreateMessage(char *message, char *username);
 
 // ----------------- ПОТОКИ -------------------
-void *ThreadServiceReceive(void *mqdes_service);
-void *ThreadClMessage();
-void *ThreadSend();
+// void *ThreadServiceReceive(void *mqdes_service);
 
-#endif  // SERVER_H
+#endif // CLIENT_H
