@@ -72,6 +72,7 @@ typedef struct {
 
 typedef struct {
   char username[USERNAME_LEN];
+  char datetime[DATE_TIME_SIZE];
   char message[CL_MESSAGE_LEN];
 } Message;
 
@@ -81,6 +82,10 @@ typedef struct {
 } ServiceMessage;
 
 extern mqd_t mqdes_cl_message;
+extern mqd_t mqdes_service;
+extern mqd_t mqdes_send;
+extern int history_index;
+extern Message chat_history[HISTORY_LEN];
 
 /*
 Функция создает очередь и обрабатывает ошибки связанные с ее созданием*/
@@ -96,8 +101,9 @@ void GetName(char *string);
 void ClearString(char *string, int len);
 void RemoveNewLineSymbol(char *string);
 void CreateMessage(char *message, char *username);
-
+void ParseServerMessage(char *message);
 // ----------------- ПОТОКИ -------------------
 // void *ThreadServiceReceive(void *mqdes_service);
+void *ThreadReceive(void *arg);
 
 #endif // CLIENT_H

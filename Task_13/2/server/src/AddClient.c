@@ -6,6 +6,7 @@
 */
 int AddClient(char *clientname) {
   int is_writed = -1;
+  // TODO: проверку на наличие открытой очереди
   for (int i = 0; i < USERS_MAX; i++) {
     // ищем первое свободное место в списке клиентов
     if (user_list[i].last_message_index == -1) {

@@ -17,12 +17,16 @@ void *ThreadClMessage() {
 
       // тестовый вывод всей истории после записи сообщения клиента
       printf(BLUE "MESSAGE HISTORY\n" END_COLOR);
+      pthread_mutex_lock(&m1);
+
       for (int i = 0; i < history_index; i++) {
         printf(BLUE "№ %d\n", i);
         printf("\'%s\'\n", chat_history[i].username);
         printf("\'%s\'\n", chat_history[i].datetime);
         printf("\'%s\'\n" END_COLOR, chat_history[i].message);
       }
+      pthread_mutex_unlock(&m1);
+
     } else {
       printf(RED "ERROR SERVICE RECEIVE: can\'t read from queue %s\n" END_COLOR,
              CLIENT_MS_QUEUE);
@@ -31,4 +35,5 @@ void *ThreadClMessage() {
       printf(RED "%s\n" END_COLOR, strerror(errno));
     }
   }
+  return NULL;
 }

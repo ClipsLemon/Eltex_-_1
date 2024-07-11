@@ -32,4 +32,5 @@ void *ThreadServiceReceive(void *mqdes_service) {
     }
   }
   printf(GREEN "SERVICE THREAD HAS BEEN KILLED\n" END_COLOR);
+  return NULL;
 }

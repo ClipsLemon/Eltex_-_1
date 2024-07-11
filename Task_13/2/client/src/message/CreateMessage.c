@@ -20,4 +20,5 @@ void CreateMessage(char *message, char *username) {
   strncat(message, date_time, DATE_TIME_SIZE);
   strncat(message, "%%", 1);
   strncat(message, message_text, CL_MESSAGE_LEN);
+  RemoveNewLineSymbol(message);
 }
