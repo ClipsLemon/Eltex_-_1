@@ -3,16 +3,16 @@
 
 void *ThreadClMessage() {
   printf(GREEN "CLIENT MESSAGES THREAD HAS BEEN CREATED\n" END_COLOR);
+  unsigned int priority = 0;
+  int res = 0;
 
   while (1) {
-    char message[MESSAGE_PACK_LEN];
-    unsigned int priority = 0;
-    int res = 0;
-    if ((res = mq_receive(mqdes_cl_message, message, MESSAGE_PACK_LEN,
-                          &priority)) != -1) {
+    if ((res =
+             mq_receive(mqdes_cl_message, (char *)&chat_history[history_index],
+                        MESSAGE_PACK_LEN, &priority)) != -1) {
       pthread_mutex_lock(&m1);
+      history_index++;
       mq_send(mqdes_send, "upd", 4, 1);
-      ParseClientMessage(message);
       pthread_mutex_unlock(&m1);
 
       // тестовый вывод всей истории после записи сообщения клиента

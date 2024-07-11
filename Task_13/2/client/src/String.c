@@ -18,6 +18,7 @@ void ClearString(char *string, int len) {
 }
 
 void GetName(char *string) {
+
   printf("Ограничение по длине %d символов.\n", USERNAME_LEN);
   while (1) {
     fgets(&string[1], USERNAME_LEN, stdin);

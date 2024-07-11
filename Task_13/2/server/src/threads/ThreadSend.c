@@ -1,11 +1,13 @@
 #include "../../../color.h"
 #include "../../server.h"
 
+/*
+поток рассылает инфоормацию на клиентов
+*/
 void *ThreadSend() {
   char send_msg[4];
   unsigned int priority;
   int res = 0;
-  char message[MESSAGE_PACK_LEN];
 
   printf(GREEN "SENDER THREAD HAS BEEN CREATED\n" END_COLOR);
 
@@ -16,16 +18,15 @@ void *ThreadSend() {
       for (int u_i = 0; u_i < USERS_MAX; u_i++) {
         if (user_list[u_i].last_message_index != -1) {
           for (int h_i = 0; h_i < history_index; h_i++) {
-            strncpy(message, chat_history[h_i].username, USERNAME_LEN);
-            strncat(message, "%%", 1);
-            strncat(message, chat_history[h_i].datetime, DATE_TIME_SIZE);
-            strncat(message, "%%", 1);
-            strncat(message, chat_history[h_i].message, CL_MESSAGE_LEN);
-            if (mq_send(user_list[u_i].mqdes_client, message, MESSAGE_PACK_LEN,
-                        1) == -1) {
-              printf(RED "ERROR WHILE SENDING TO CLIENT: %s\n" END_COLOR,
-                     strerror(errno));
-              sleep(2);
+            if (h_i >= user_list[u_i].last_message_index) {
+              if (mq_send(user_list[u_i].mqdes_client,
+                          (char *)&chat_history[h_i], MESSAGE_PACK_LEN,
+                          1) == -1) {
+                printf(RED "ERROR WHILE SENDING TO CLIENT: %s\n" END_COLOR,
+                       strerror(errno));
+                sleep(2);
+              }
+              user_list[u_i].last_message_index++;
             }
           }
         }

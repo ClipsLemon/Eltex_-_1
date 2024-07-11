@@ -1,0 +1,34 @@
+[31mERROR: can't CONNECT to queue: /service_queue
+[0m[31mUnknown error -1
+[0m[31mERROR: can't CONNECT to queue: /service_queue
+[0m[31mUnknown error -1
+[0m[31mERROR: can't CONNECT to queue: /service_queue
+[0m[31mUnknown error -1
+[0m[31mERROR: can't CONNECT to queue: /service_queue
+[0m[31mUnknown error -1
+[0m[31mERROR: can't CONNECT to queue: /service_queue
+[0m[31mUnknown error -1
+[0m[32mLOG: CONNECT to queue /service_queue successfully
+[0m[32mLOG: CONNECT to queue /messages_queue successfully
+[0m[32mLOG: CONNECT to queue /send_queue successfully
+[0m[31mERROR: can't CONNECT to queue: /upd_win_queue
+[0m[31mUnknown error -1
+[0m[31mERROR: can't CONNECT to queue: /upd_win_queue
+[0m[31mUnknown error -1
+[0m[31mERROR: can't CONNECT to queue: /upd_win_queue
+[0m[31mUnknown error -1
+[0m[31mERROR: can't CONNECT to queue: /upd_win_queue
+[0m[31mUnknown error -1
+[0m[31mERROR: can't CONNECT to queue: /clipslemon
+[0m[31mUnknown error -1
+[0m[31mERROR: can't CONNECT to queue: /upd_win_queue
+[0m[31mUnknown error -1
+[0m[32mLOG: CONNECT to queue /clipslemon successfully
+[0m[32mRECEIVE THREAD HAS BEEN CREATED
+[0m[31mERROR: can't CONNECT to queue: /upd_win_queue
+[0m[31mUnknown error -1
+[0m[31mERROR: can't CONNECT to queue: /upd_win_queue
+[0m[31mUnknown error -1
+[0m[31mERROR: can't CONNECT to queue: /upd_win_queue
+[0m[31mUnknown error -1
+[0m

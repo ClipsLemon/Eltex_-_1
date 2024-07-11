@@ -3,6 +3,7 @@
 
 #include <errno.h>
 #include <mqueue.h>
+#include <ncurses.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,12 +55,12 @@
  */
 #define SEND_QUEUE "/send_queue"
 
-/*
-Служебная очередь, в которую будет посылаться сигнал на выключение сервера.
-По большей части нужна для работы сервера в режиме ожидания без затраты лишних
-ресурсов.
-*/
-#define SHUTDOWN_SERVER_QUEUE "/shutdown"
+/*в очередь приходят сообщения о необходимости обновить одно из окон
+ */
+#define UPD_WIN_QUEUE "/upd_win_queue"
+#define CHAT_FILED 'c'
+#define TEXT_FIELD 't'
+#define USERS_FIELD 'u'
 
 #define DEFAULT_OFLGAS (O_RDONLY)
 #define DEFAULT_MODE (S_IWUSR | S_IRUSR)
@@ -81,11 +82,21 @@ typedef struct {
   char username[USERNAME_LEN];
 } ServiceMessage;
 
+typedef struct {
+  // один символ на c или d служебные
+  char username[USERNAME_LEN + 1];
+  char queue_name[USERNAME_LEN + 1];
+} ClientInf;
+
 extern mqd_t mqdes_cl_message;
 extern mqd_t mqdes_service;
 extern mqd_t mqdes_send;
 extern int history_index;
 extern Message chat_history[HISTORY_LEN];
+extern pthread_mutex_t m1;
+extern FILE *log_file;
+extern WINDOW *win_chat_field;
+extern WINDOW *win_text_field;
 
 /*
 Функция создает очередь и обрабатывает ошибки связанные с ее созданием*/
@@ -100,10 +111,14 @@ void QueueDisconnect(mqd_t queue_id, char *queue_name);
 void GetName(char *string);
 void ClearString(char *string, int len);
 void RemoveNewLineSymbol(char *string);
-void CreateMessage(char *message, char *username);
+void CreateMessage(Message *message, char *username);
 void ParseServerMessage(char *message);
+void Login(char *username);
+void PrintChat();
 // ----------------- ПОТОКИ -------------------
 // void *ThreadServiceReceive(void *mqdes_service);
-void *ThreadReceive(void *arg);
+void *ThreadReceive();
+void *ThreadSendServiceMessage();
+void *ThreadSendMessage(void *arg);
 
 #endif // CLIENT_H

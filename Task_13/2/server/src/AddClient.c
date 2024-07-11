@@ -20,6 +20,8 @@ int AddClient(char *clientname) {
           QueueOpen(user_list[i].queue_name, DEFAULT_OFLGAS, DEFAULT_MODE,
                     MESSAGE_PACK_LEN, MAX_CL_MESSAGE);
       is_writed = 1;
+      // отправляем сигнал на отправку сообщений
+      mq_send(mqdes_send, "upd", 4, 1);
       break;
     }
   }

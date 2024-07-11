@@ -118,5 +118,6 @@ void QueueClose(mqd_t queue_id, char *queue_name);
 void *ThreadServiceReceive(void *mqdes_service);
 void *ThreadClMessage();
 void *ThreadSend();
+void *ThreadShutdown();
 
-#endif  // SERVER_H
+#endif // SERVER_H

@@ -2,6 +2,7 @@
   "files.associations": {
     "locale.h": "c",
     "stdio.h": "c",
-    "main.h": "c"
+    "main.h": "c",
+    "system_error": "c"
   }
 }

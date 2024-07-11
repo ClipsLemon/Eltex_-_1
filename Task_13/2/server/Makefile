@@ -1,4 +1,4 @@
-GCC = gcc -g -Wall -Wextra -Werror
+GCC = gcc -g
 
 SRC_DIR = src
 OBJ_DIR = objects

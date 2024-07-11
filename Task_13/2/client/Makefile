@@ -1,4 +1,4 @@
-GCC = gcc -g -Wall -Wextra -Werror
+GCC = gcc -g 
 
 SRC_DIR = src
 OBJ_DIR = objects
@@ -6,6 +6,7 @@ INTERFACES_DIR = interface
 FILES_FUNC = files_func
 DIR_FUNC = dir_func
 
+LIBS = -lrt -pthread -lncurses
 
 # Получение имен подкаталогов в директории SRC_DIR
 SUBDIRS := $(shell find $(SRC_DIR) -type d)
@@ -27,7 +28,7 @@ $(OBJ_DIR)/%.o: %.c client.h ../color.h
 
 build:
 	$(CC) -c main.c -o main.o
-	$(CC) $(OBJS) ./main.o -o client -lrt -pthread
+	$(CC) $(OBJS) ./main.o -o client $(LIBS)
 
 # build:
 # 	$(GCC) ./$(OBJ_DIR)/*.o -o ./client
