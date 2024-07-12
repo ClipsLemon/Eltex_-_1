@@ -1,18 +1,18 @@
 #include "../color.h"
 #include "client.h"
 
-FILE *log_file;
+// FILE *log_file;
 
-mqd_t mqdes_cl_message;
-mqd_t mqdes_service;
-mqd_t mqdes_send;
-mqd_t mqdes_upd_wind;
+// mqd_t mqdes_cl_message;
+// mqd_t mqdes_service;
+// mqd_t mqdes_send;
+// mqd_t mqdes_upd_wind;
 
-WINDOW *win_chat_field;
-WINDOW *win_text_field;
-WINDOW *win_users_field;
+// WINDOW *win_chat_field;
+// WINDOW *win_text_field;
+// WINDOW *win_users_field;
 
-Message chat_history[HISTORY_LEN];
+// Message chat_history[HISTORY_LEN];
 pthread_mutex_t m1 = PTHREAD_MUTEX_INITIALIZER;
 
 char user_list[USERS_MAX][USERNAME_LEN];
@@ -25,10 +25,6 @@ int main() {
   noecho();
   cbreak();
   curs_set(FALSE);
-  log_file = fopen("log_file.txt", "w");
-
-  memset(&chat_history, 0, sizeof(chat_history));
-  memset(&user_list, 0, sizeof(user_list));
 
   int scr_row = getmaxy(stdscr);
   int scr_col = getmaxx(stdscr);
@@ -39,44 +35,51 @@ int main() {
   int text_row = scr_row / 3;
   int text_col = scr_col - scr_col / 4;
 
-  win_chat_field = newwin(chat_row, chat_col, 0, 0);
-  win_text_field = newwin(text_row, text_col, chat_row, 0);
-  win_users_field = newwin(scr_row, scr_col / 4, 0, chat_col);
+  // инициализация структуры контроллер
+  Controller info;
+  info.log_file = fopen("log_file.txt", "w");
 
-  box(win_chat_field, 0, 0);
-  box(win_text_field, 0, 0);
-  box(win_users_field, 0, 0);
+  memset(&info.chat_history, 0, sizeof(info.chat_history));
+  memset(&info.user_list, 0, sizeof(info.user_list));
 
-  wrefresh(win_chat_field);
-  wrefresh(win_text_field);
-  wrefresh(win_users_field);
+  info.win_chat_field = newwin(chat_row, chat_col, 0, 0);
 
-  for (int i = 0; i < USERS_MAX; i++) {
-    ClearString(user_list[i], USERNAME_LEN);
-  }
+  info.win_text_field = newwin(text_row, text_col, chat_row, 0);
+  info.win_users_field = newwin(scr_row, scr_col / 4, 0, chat_col);
 
-  mqdes_service = QueueConnect(SERVICE_QUEUE, O_WRONLY, DEFAULT_MODE,
-                               SERVICE_MESSAGE_LEN, MAX_SERVICE_MESSAGE);
+  info.mqdes_service =
+      QueueConnect(SERVICE_QUEUE, O_WRONLY, DEFAULT_MODE, SERVICE_MESSAGE_LEN,
+                   MAX_SERVICE_MESSAGE, info.log_file);
 
-  mqdes_cl_message = QueueConnect(CLIENT_MS_QUEUE, O_WRONLY, DEFAULT_MODE,
-                                  MESSAGE_PACK_LEN, MAX_CL_MESSAGE);
-  mqdes_send =
-      QueueConnect(SEND_QUEUE, DEFAULT_OFLGAS, DEFAULT_MODE, 4, MAX_CL_MESSAGE);
+  info.mqdes_cl_message =
+      QueueConnect(CLIENT_MS_QUEUE, O_WRONLY, DEFAULT_MODE, MESSAGE_PACK_LEN,
+                   MAX_CL_MESSAGE, info.log_file);
+  info.mqdes_send = QueueConnect(SEND_QUEUE, DEFAULT_OFLGAS, DEFAULT_MODE, 4,
+                                 MAX_CL_MESSAGE, info.log_file);
+
+  box(info.win_chat_field, 0, 0);
+  box(info.win_text_field, 0, 0);
+  box(info.win_users_field, 0, 0);
+
+  wrefresh(info.win_chat_field);
+  wrefresh(info.win_text_field);
+  wrefresh(info.win_users_field);
 
   pthread_t client_serv_thread;
-  pthread_create(&client_serv_thread, NULL, ThreadSendServiceMessage, NULL);
+  pthread_create(&client_serv_thread, NULL, ThreadSendServiceMessage,
+                 (void *)&info);
 
   // в эту очередь функции направляют флаги обновления конкретного экрана, если
   // это нужно
 
   pthread_join(client_serv_thread, NULL);
 
-  QueueDisconnect(mqdes_service, SERVICE_QUEUE);
-  QueueDisconnect(mqdes_cl_message, CLIENT_MS_QUEUE);
-  
-  delwin(win_chat_field);
-  delwin(win_text_field);
-  delwin(win_users_field);
+  QueueDisconnect(info.mqdes_service, SERVICE_QUEUE);
+  QueueDisconnect(info.mqdes_cl_message, CLIENT_MS_QUEUE);
+
+  delwin(info.win_chat_field);
+  delwin(info.win_text_field);
+  delwin(info.win_users_field);
 
   endwin();
   return 0;

@@ -5,7 +5,7 @@
 Принимает информацию от сервера в потоке клиента
 */
 void *ThreadReceive(void *arg) {
-  const mqd_t *mqdes_server_msg = (const mqd_t *)arg;
+  Controller *info = (Controller *)arg;
 
   // сообщение которое пришло пользователю
   Message tmp_message;
@@ -13,10 +13,10 @@ void *ThreadReceive(void *arg) {
   // результат считывания сообщения
   ssize_t res = 0;
 
-  fputs(GREEN "RECEIVE THREAD HAS BEEN CREATED\n" END_COLOR, log_file);
+  fputs(GREEN "RECEIVE THREAD HAS BEEN CREATED\n" END_COLOR, info->log_file);
   while (1) {
     // смотрим
-    if ((res = mq_receive(*mqdes_server_msg, (char *)&tmp_message,
+    if ((res = mq_receive(info->mqdes_server_msg, (char *)&tmp_message,
                           MESSAGE_PACK_LEN, &msg_priority)) != -1) {
       pthread_mutex_lock(&m1);
       // если дата пришла пустая, значит сервер отправил сообщение о входе или
@@ -26,8 +26,8 @@ void *ThreadReceive(void *arg) {
         if (strncmp(tmp_message.message, "logged in", 10) == 0) {
           for (int i = 0; i < USERS_MAX; i++) {
             // находим первое свободное место и пишем туда клиента
-            if (user_list[i][0] == '\0') {
-              strncpy(user_list[i], tmp_message.username, USERNAME_LEN);
+            if (info->user_list[i][0] == '\0') {
+              strncpy(info->user_list[i], tmp_message.username, USERNAME_LEN);
               break;
             }
           }
@@ -35,25 +35,27 @@ void *ThreadReceive(void *arg) {
         } else {
           for (int i = 0; i < USERS_MAX; i++) {
             // находим клиента
-            if (strncmp(user_list[i], tmp_message.username, USERNAME_LEN) ==
-                0) {
-              memset(user_list[i], 0, USERNAME_LEN);
+            if (strncmp(info->user_list[i], tmp_message.username,
+                        USERNAME_LEN) == 0) {
+              memset(info->user_list[i], 0, USERNAME_LEN);
               break;
             }
           }
         }
 
-        memcpy(&chat_history[history_index], &tmp_message, sizeof(tmp_message));
-        PrintUsersList();
-        history_index++;
-        PrintChat();
-        wclear(win_text_field);
-        box(win_text_field, 0, 0);
-        wrefresh(win_text_field);
+        memcpy(&(info->chat_history[info->history_index]), &tmp_message,
+               sizeof(tmp_message));
+        PrintUsersList(info);
+        info->history_index++;
+        PrintChat(info);
+        wclear(info->win_text_field);
+        box(info->win_text_field, 0, 0);
+        wrefresh(info->win_text_field);
       } else {
-        memcpy(&chat_history[history_index], &tmp_message, sizeof(tmp_message));
-        history_index++;
-        PrintChat();
+        memcpy(&(info->chat_history[info->history_index]), &tmp_message,
+               sizeof(tmp_message));
+        info->history_index++;
+        PrintChat(info);
       }
 
       pthread_mutex_unlock(&m1);

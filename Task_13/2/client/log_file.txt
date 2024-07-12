@@ -1,6 +1,0 @@
-[32mLOG: CONNECT to queue /service_queue successfully
-[0m[32mLOG: CONNECT to queue /messages_queue successfully
-[0m[32mLOG: CONNECT to queue /send_queue successfully
-[0m[32mLOG: CONNECT to queue /clips successfully
-[0m[32mRECEIVE THREAD HAS BEEN CREATED
-[0m

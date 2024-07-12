@@ -82,22 +82,27 @@ typedef struct {
   char queue_name[USERNAME_LEN + 1];
 } ClientInf;
 
-extern mqd_t mqdes_cl_message;
-extern mqd_t mqdes_service;
-extern mqd_t mqdes_send;
-extern int history_index;
-extern Message chat_history[HISTORY_LEN];
+typedef struct {
+  mqd_t mqdes_cl_message;
+  mqd_t mqdes_service;
+  mqd_t mqdes_send;
+  mqd_t mqdes_server_msg;
+  int history_index;
+  Message chat_history[HISTORY_LEN];
+  FILE *log_file;
+  WINDOW *win_chat_field;
+  WINDOW *win_text_field;
+  WINDOW *win_users_field;
+  char user_list[USERS_MAX][USERNAME_LEN];
+  ClientInf client_inf;
+} Controller;
+
 extern pthread_mutex_t m1;
-extern FILE *log_file;
-extern WINDOW *win_chat_field;
-extern WINDOW *win_text_field;
-extern WINDOW *win_users_field;
-extern char user_list[USERS_MAX][USERNAME_LEN];
 
 /*
 Функция создает очередь и обрабатывает ошибки связанные с ее созданием*/
 mqd_t QueueConnect(char *queue_name, int oflag, mode_t mode, int message_len,
-                   int number_of_messages);
+                   int number_of_messages, FILE *log_file);
 
 /*
 Функция закрывает очередь и обрабатыват ошибки связанные с ее закрытием
@@ -108,13 +113,13 @@ void GetName(char *string);
 void ClearString(char *string, int len);
 void RemoveNewLineSymbol(char *string);
 void CreateMessage(Message *message, char *username);
-void PrintUsersList();
-void Login(char *username);
-void PrintChat();
-void ClearInputBuffer();
+void PrintUsersList(Controller *info);
+void Login(Controller *info);
+void PrintChat(Controller *info);
+
 // ----------------- ПОТОКИ -------------------
-void *ThreadReceive();
-void *ThreadSendServiceMessage();
+void *ThreadReceive(void *arg);
+void *ThreadSendServiceMessage(void *arg);
 void *ThreadSendMessage(void *arg);
 
 #endif // CLIENT_H

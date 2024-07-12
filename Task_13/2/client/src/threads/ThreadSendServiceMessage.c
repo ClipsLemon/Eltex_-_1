@@ -5,36 +5,38 @@
 очереди и отправляет информацию о входе на сервер, по необходимо отправляет
 сообщение о выходе
 */
-void *ThreadSendServiceMessage() {
-  ClientInf client_inf;
-  mqd_t mqdes_server_message;
 
-  Login(client_inf.username);
+void *ThreadSendServiceMessage(void *arg) {
+  Controller *info = (Controller *)arg;
+
+  Login(info);
 
   // создаем название очереди
-  client_inf.username[0] = CLIENT_CON;
-  strncpy(client_inf.queue_name, client_inf.username, USERNAME_LEN + 1);
-  client_inf.queue_name[0] = '/';
+  info->client_inf.username[0] = CLIENT_CON;
+  strncpy(info->client_inf.queue_name, info->client_inf.username,
+          USERNAME_LEN + 1);
+  info->client_inf.queue_name[0] = '/';
   // заходим на сервер и открываем очередь
-  mq_send(mqdes_service, client_inf.username, SERVICE_MESSAGE_LEN, 1);
+  mq_send(info->mqdes_service, info->client_inf.username, SERVICE_MESSAGE_LEN,
+          1);
   // открываем очередь на чтение, сюда сервер рассылает сообщения истории
   sleep(1);
-  mqdes_server_message =
-      QueueConnect(client_inf.queue_name, DEFAULT_OFLGAS, DEFAULT_MODE,
-                   MESSAGE_PACK_LEN, MAX_CL_MESSAGE);
+  info->mqdes_server_msg =
+      QueueConnect(info->client_inf.queue_name, DEFAULT_OFLGAS, DEFAULT_MODE,
+                   MESSAGE_PACK_LEN, MAX_CL_MESSAGE, info->log_file);
 
   pthread_t send_message_thread;
   pthread_t recieve_message_thread;
-  pthread_create(&send_message_thread, NULL, ThreadSendMessage, &client_inf);
-  pthread_create(&recieve_message_thread, NULL, ThreadReceive,
-                 &mqdes_server_message);
+  pthread_create(&send_message_thread, NULL, ThreadSendMessage, (void *)info);
+  pthread_create(&recieve_message_thread, NULL, ThreadReceive, (void *)info);
 
   // ждем завершения поток отправки сообщений
   pthread_join(send_message_thread, NULL);
 
-  client_inf.username[0] = CLIENT_DISC;
-  mq_send(mqdes_service, client_inf.username, SERVICE_MESSAGE_LEN, 1);
+  info->client_inf.username[0] = CLIENT_DISC;
+  mq_send(info->mqdes_service, info->client_inf.username, SERVICE_MESSAGE_LEN,
+          1);
   // выходим из сервера и закрываем очередь
-  QueueDisconnect(mqdes_server_message, client_inf.queue_name);
+  QueueDisconnect(info->mqdes_server_msg, info->client_inf.queue_name);
   return NULL;
 }

@@ -2,7 +2,7 @@
 #include "../client.h"
 
 mqd_t QueueConnect(char *queue_name, int oflag, mode_t mode, int message_len,
-                   int number_of_messages) {
+                   int number_of_messages, FILE *log_file) {
   mqd_t q_id;
   struct mq_attr attr;
   char string_to_file[1024];
