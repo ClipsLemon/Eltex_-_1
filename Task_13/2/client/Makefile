@@ -5,9 +5,10 @@ OBJ_DIR = objects
 INTERFACES_DIR = interface
 FILES_FUNC = files_func
 DIR_FUNC = dir_func
+A := $(sudo ps -a)
+
 
 LIBS = -lrt -pthread -lncurses
-
 # Получение имен подкаталогов в директории SRC_DIR
 SUBDIRS := $(shell find $(SRC_DIR) -type d)
 
@@ -49,3 +50,6 @@ leaks_test: clean $(OBJS) build
 clean:
 	rm -fr $(OBJS) ./client ./*.o
 	rm -fr ./client
+
+gdb_client:
+	$(A)

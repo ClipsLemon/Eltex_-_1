@@ -4,6 +4,7 @@
 void *ThreadSendMessage(void *arg) {
   ClientInf *client_inf = (ClientInf *)arg;
   Message message;
+  memset(&message, 0, sizeof(message));
   echo();
 
   while (1) {
@@ -11,9 +12,12 @@ void *ThreadSendMessage(void *arg) {
     if (strncmp(message.message, "/exit", 5) == 0) {
       break;
     }
+
+    pthread_mutex_lock(&m1);
     wclear(win_text_field);
-    box(win_text_field, 1, 1);
+    box(win_text_field, 0, 0);
     wrefresh(win_text_field);
+
     RemoveNewLineSymbol(message.message);
     CreateMessage(&message, client_inf->username);
     mq_send(mqdes_cl_message, (char *)&message, sizeof(message), 1);
@@ -21,7 +25,8 @@ void *ThreadSendMessage(void *arg) {
     ClearString(message.datetime, DATE_TIME_SIZE);
     ClearString(message.username, USERNAME_LEN + 1);
     ClearString(message.message, CL_MESSAGE_LEN);
+    pthread_mutex_unlock(&m1);
   }
   noecho();
-  exit(0);
+  return NULL;
 }

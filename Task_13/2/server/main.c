@@ -9,8 +9,8 @@ int history_index = 0;
 
 mqd_t mqdes_service;
 mqd_t mqdes_cl_message;
-
 mqd_t mqdes_send;
+mqd_t mqdes_cl_lst;
 mqd_t mqdes_shutdown;
 
 int main() {
@@ -28,10 +28,6 @@ int main() {
   mqdes_send =
       QueueOpen(SEND_QUEUE, DEFAULT_OFLGAS, DEFAULT_MODE, 4, MAX_CL_MESSAGE);
 
-  // QueueClose(mqdes_service, SERVICE_QUEUE);
-  // QueueClose(mqdes_cl_message, CLIENT_MS_QUEUE);
-  // QueueClose(mqdes_send, SEND_QUEUE);
-
   // очередь нужна для выключения
   mqdes_shutdown =
       QueueOpen(SHUTDOWN_SERVER_QUEUE, DEFAULT_OFLGAS, DEFAULT_MODE, 2, 1);
@@ -41,6 +37,9 @@ int main() {
   pthread_t cl_message_thread;
   pthread_t send_thread;
   pthread_t shutdown_thread;
+
+  memset(&chat_history, 0, sizeof(chat_history));
+  memset(&user_list, 0, sizeof(user_list));
 
   // зануляем всех клиентов
   for (int i = 0; i < USERS_MAX; i++) {

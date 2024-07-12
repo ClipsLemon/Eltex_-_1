@@ -47,6 +47,8 @@
 #define SERVICE_QUEUE "/service_queue"
 // очередь сообщений, сюда клиенты присылают свои сообщения
 #define CLIENT_MS_QUEUE "/messages_queue"
+
+#define CLIENT_LIST_QUEUE "/cl_lst_queue"
 /*
  * очередь для сервера. В эту очередь, после обработки сообщения от клиента из
  * CLIENT_MS_QUEUE поступает сообщение, говорящие о том, какое сообщение надо
@@ -71,6 +73,7 @@ typedef struct {
   // + на / в начале названия
   char queue_name[USERNAME_LEN + 1];
   mqd_t mqdes_client;
+
 } User;
 
 typedef struct {

@@ -32,3 +32,30 @@ void GetName(char *string) {
     }
   }
 }
+
+void ClearInputBuffer() {
+  // nodelay(win_chat_field, true);
+  // nodelay(win_text_field, true);
+  // nodelay(win_users_field, true);
+
+  // cbreak();
+
+  // nodelay(win_chat_field, false);
+  // nodelay(win_text_field, false);
+  // nodelay(win_users_field, false);
+
+  // while ((wgetch(win_chat_field)) != '\n') {
+  //   ;
+  // }
+
+  while ((wgetch(win_text_field)) != '\n') {
+    ;
+  }
+  // while ((wgetch(win_users_field)) != '\n') {
+  //   ;
+  // }
+
+  // nodelay(win_chat_field, false);
+  // nodelay(win_text_field, false);
+  // nodelay(win_users_field, false);
+}

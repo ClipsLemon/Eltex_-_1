@@ -3,7 +3,8 @@
 
 #include <errno.h>
 #include <mqueue.h>
-#include <ncurses.h>
+// #include <ncurses.h>
+#include <curses.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,13 +56,6 @@
  */
 #define SEND_QUEUE "/send_queue"
 
-/*в очередь приходят сообщения о необходимости обновить одно из окон
- */
-#define UPD_WIN_QUEUE "/upd_win_queue"
-#define CHAT_FILED 'c'
-#define TEXT_FIELD 't'
-#define USERS_FIELD 'u'
-
 #define DEFAULT_OFLGAS (O_RDONLY)
 #define DEFAULT_MODE (S_IWUSR | S_IRUSR)
 
@@ -97,6 +91,8 @@ extern pthread_mutex_t m1;
 extern FILE *log_file;
 extern WINDOW *win_chat_field;
 extern WINDOW *win_text_field;
+extern WINDOW *win_users_field;
+extern char user_list[USERS_MAX][USERNAME_LEN];
 
 /*
 Функция создает очередь и обрабатывает ошибки связанные с ее созданием*/
@@ -112,11 +108,11 @@ void GetName(char *string);
 void ClearString(char *string, int len);
 void RemoveNewLineSymbol(char *string);
 void CreateMessage(Message *message, char *username);
-void ParseServerMessage(char *message);
+void PrintUsersList();
 void Login(char *username);
 void PrintChat();
+void ClearInputBuffer();
 // ----------------- ПОТОКИ -------------------
-// void *ThreadServiceReceive(void *mqdes_service);
 void *ThreadReceive();
 void *ThreadSendServiceMessage();
 void *ThreadSendMessage(void *arg);

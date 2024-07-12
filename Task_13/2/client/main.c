@@ -10,9 +10,13 @@ mqd_t mqdes_upd_wind;
 
 WINDOW *win_chat_field;
 WINDOW *win_text_field;
+WINDOW *win_users_field;
 
 Message chat_history[HISTORY_LEN];
 pthread_mutex_t m1 = PTHREAD_MUTEX_INITIALIZER;
+
+char user_list[USERS_MAX][USERNAME_LEN];
+
 int history_index = 0;
 
 int main() {
@@ -22,6 +26,9 @@ int main() {
   cbreak();
   curs_set(FALSE);
   log_file = fopen("log_file.txt", "w");
+
+  memset(&chat_history, 0, sizeof(chat_history));
+  memset(&user_list, 0, sizeof(user_list));
 
   int scr_row = getmaxy(stdscr);
   int scr_col = getmaxx(stdscr);
@@ -34,12 +41,19 @@ int main() {
 
   win_chat_field = newwin(chat_row, chat_col, 0, 0);
   win_text_field = newwin(text_row, text_col, chat_row, 0);
+  win_users_field = newwin(scr_row, scr_col / 4, 0, chat_col);
 
   box(win_chat_field, 0, 0);
   box(win_text_field, 0, 0);
+  box(win_users_field, 0, 0);
 
   wrefresh(win_chat_field);
   wrefresh(win_text_field);
+  wrefresh(win_users_field);
+
+  for (int i = 0; i < USERS_MAX; i++) {
+    ClearString(user_list[i], USERNAME_LEN);
+  }
 
   mqdes_service = QueueConnect(SERVICE_QUEUE, O_WRONLY, DEFAULT_MODE,
                                SERVICE_MESSAGE_LEN, MAX_SERVICE_MESSAGE);
@@ -54,12 +68,15 @@ int main() {
 
   // в эту очередь функции направляют флаги обновления конкретного экрана, если
   // это нужно
-  mqdes_upd_wind = QueueConnect(UPD_WIN_QUEUE, O_RDWR, DEFAULT_MODE, 2, 25);
 
   pthread_join(client_serv_thread, NULL);
 
   QueueDisconnect(mqdes_service, SERVICE_QUEUE);
   QueueDisconnect(mqdes_cl_message, CLIENT_MS_QUEUE);
+  
+  delwin(win_chat_field);
+  delwin(win_text_field);
+  delwin(win_users_field);
 
   endwin();
   return 0;
