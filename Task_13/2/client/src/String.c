@@ -12,16 +12,16 @@ void RemoveNewLineSymbol(char *string) {
 }
 
 void GetName(char *string) {
-
   printf("Ограничение по длине %d символов.\n", USERNAME_LEN);
   while (1) {
     fgets(&string[1], USERNAME_LEN, stdin);
     if (strchr(&string[1], '%')) {
-      printf(RED "В ващей строке запрещенный символ \'%%\'.\nВведите имя "
-                 "заново.\n" END_COLOR);
+      printf(
+          "В ващей строке запрещенный символ \'%%\'.\nВведите имя "
+          "заново.\n");
     } else {
       RemoveNewLineSymbol(string);
-      printf(GREEN "Приветствую %s!\n" END_COLOR, &string[1]);
+      printf("Приветствую %s!\n", &string[1]);
       break;
     }
   }

@@ -19,9 +19,7 @@ SRCS := $(foreach dir,$(SUBDIRS),$(wildcard $(dir)/*.c))
 OBJS := $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRCS))
 
 
-
-all: $(OBJS) build run 
-
+all: $(OBJS) build run
 # компиляци файлов папки src
 $(OBJ_DIR)/%.o: %.c client.h ../color.h
 	@mkdir -p $(dir $@)
@@ -31,15 +29,12 @@ build:
 	$(CC) -c main.c -o main.o
 	$(CC) $(OBJS) ./main.o -o client $(LIBS)
 
-# build:
-# 	$(GCC) ./$(OBJ_DIR)/*.o -o ./client
-
-
 run:
 	sudo ./client
 
 format:
-	clang-format -i --style=Google $(SRC_DIR)/*.c *.c *.h
+	clang-format -i --style=Google $(SRCS) *.c *.h
+
 
 valgrind_test: clean $(OBJS) build
 	valgrind --tool=memcheck --leak-check=full --track-origins=yes -s ./client 
@@ -50,6 +45,4 @@ leaks_test: clean $(OBJS) build
 clean:
 	rm -fr $(OBJS) ./client ./*.o
 	rm -fr ./client
-
-gdb_client:
-	$(A)
+	rm -fr log_file.txt

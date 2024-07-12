@@ -6,12 +6,11 @@ void QueueDisconnect(mqd_t queue_id, char *queue_name) {
     // либо мы закрываем первы раз, либо не смогли отлинковать и отлинковываем
     // повторно
     if ((mq_close(queue_id) != 0)) {
-      printf(RED "ERROR: can\'t CLOSE queue: %s\n" END_COLOR, queue_name);
+      printf("ERROR: can\'t CLOSE queue: %s\n", queue_name);
     } else {
       break;
     }
   }
 
-  printf(GREEN "LOG: A queue %s has been CLOSED successfully\n" END_COLOR,
-         queue_name);
+  printf("LOG: A queue %s has been CLOSED successfully\n", queue_name);
 }

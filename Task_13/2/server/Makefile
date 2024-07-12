@@ -37,7 +37,7 @@ run:
 	sudo ./server
 
 format:
-	clang-format -i --style=Google $(SRC_DIR)/*.c *.c *.h
+	clang-format -i --style=Google $(SRCS) *.c *.h
 
 valgrind_test: clean $(OBJS) build
 	valgrind --tool=memcheck --leak-check=full --track-origins=yes -s ./server 

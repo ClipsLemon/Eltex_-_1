@@ -1,7 +1,8 @@
 #include "../../../color.h"
 #include "../../server.h"
 
-void *ThreadShutdown() {
+void *ThreadShutdown(void *arg) {
+  Controller *info = (Controller *)arg;
   printf(GREEN "SHUTDOWN THREAD HAS BEEN CREATED\n" END_COLOR);
   char exit[5];
   int send_res = 0;
@@ -11,7 +12,7 @@ void *ThreadShutdown() {
       break;
     }
   }
-  if ((send_res = mq_send(mqdes_shutdown, "1", 2, 1)) == -1) {
+  if ((send_res = mq_send(info->mqdes_shutdown, "1", 2, 1)) == -1) {
     printf(RED "ERROR SEND SHUTDOWN SIGNAL: %s\n" END_COLOR, strerror(errno));
   }
   return NULL;

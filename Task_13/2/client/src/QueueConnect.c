@@ -1,4 +1,3 @@
-#include "../../color.h"
 #include "../client.h"
 
 mqd_t QueueConnect(char *queue_name, int oflag, mode_t mode, int message_len,
@@ -13,16 +12,15 @@ mqd_t QueueConnect(char *queue_name, int oflag, mode_t mode, int message_len,
 
   while (1) {
     if ((q_id = mq_open(queue_name, oflag, mode, &attr)) == -1) {
-      sprintf(string_to_file,
-              RED "ERROR: can\'t CONNECT to queue: %s\n" END_COLOR, queue_name);
+      sprintf(string_to_file, "ERROR: can\'t CONNECT to queue: %s\n",
+              queue_name);
 
       fputs(string_to_file, log_file);
-      sprintf(string_to_file, RED "%s\n" END_COLOR, strerror(q_id));
+      sprintf(string_to_file, "%s\n", strerror(q_id));
       fputs(string_to_file, log_file);
       sleep(1);
     } else {
-      sprintf(string_to_file,
-              GREEN "LOG: CONNECT to queue %s successfully\n" END_COLOR,
+      sprintf(string_to_file, "LOG: CONNECT to queue %s successfully\n",
               queue_name);
       fputs(string_to_file, log_file);
       break;

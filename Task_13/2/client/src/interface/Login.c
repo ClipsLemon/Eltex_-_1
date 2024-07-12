@@ -1,4 +1,3 @@
-#include "../../../color.h"
 #include "../../client.h"
 
 void Login(Controller *info) {
@@ -15,7 +14,7 @@ void Login(Controller *info) {
 
   wclear(login_window);
   box(login_window, 0, 0);
-  mvwprintw(login_window, 1, 1, "Greetings %s!\n",
+  mvwprintw(login_window, 1, 1, "Greetings %s!",
             &(info->client_inf.username[1]));
   wrefresh(login_window);
   sleep(1);

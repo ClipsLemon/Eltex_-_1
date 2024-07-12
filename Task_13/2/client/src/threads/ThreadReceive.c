@@ -1,19 +1,15 @@
-#include "../../../color.h"
 #include "../../client.h"
 
-/*
-Принимает информацию от сервера в потоке клиента
-*/
 void *ThreadReceive(void *arg) {
   Controller *info = (Controller *)arg;
-
+  char error[1024];
   // сообщение которое пришло пользователю
   Message tmp_message;
   unsigned int msg_priority = 0;
   // результат считывания сообщения
   ssize_t res = 0;
 
-  fputs(GREEN "RECEIVE THREAD HAS BEEN CREATED\n" END_COLOR, info->log_file);
+  fputs("RECEIVE THREAD HAS BEEN CREATED\n", info->log_file);
   while (1) {
     // смотрим
     if ((res = mq_receive(info->mqdes_server_msg, (char *)&tmp_message,
@@ -60,6 +56,8 @@ void *ThreadReceive(void *arg) {
 
       pthread_mutex_unlock(&m1);
     } else if (res == -1) {
+      sprintf(error, "THREAD RECEIVE ERROR: %s", strerror(errno));
+      fputs(error, info->log_file);
       sleep(2);
     }
   }

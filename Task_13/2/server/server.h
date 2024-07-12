@@ -87,53 +87,60 @@ typedef struct {
   char username[USERNAME_LEN];
 } ServiceMessage;
 
-// ------------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ----------------
+typedef struct {
+  User user_list[USERS_MAX];
 
-extern User user_list[USERS_MAX];
+  mqd_t mqdes_service;
+  mqd_t mqdes_cl_message;
+  // сюда отправляется сообщение о необходимости обновить у всех клиентов
+  // историю чата
+  mqd_t mqdes_send;
+  mqd_t mqdes_shutdown;
+  int history_index;
+
+  Message chat_history[HISTORY_LEN];
+} Controller;
+
 extern pthread_mutex_t m1;
 
-extern mqd_t mqdes_service;
-extern mqd_t mqdes_cl_message;
-// сюда отправляется сообщение о необходимости обновить у всех клиентов историю
-// чата
-extern mqd_t mqdes_send;
-extern mqd_t mqdes_shutdown;
-extern int history_index;
-
-extern Message chat_history[HISTORY_LEN];
+// ------------- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ----------------
 
 // ----------------------------------------------------
 
-
 /**
- * @brief Функция удаляет клиента, когда пользователь присылает сообщение о выходе. После чего функция отправляет сигнал на рассылку изменений по клиентам
- * 
+ * @brief Функция удаляет клиента, когда пользователь присылает сообщение о
+ * выходе. После чего функция отправляет сигнал на рассылку изменений по
+ * клиентам
+ *
  * @param clientname - имя клиента
  */
-void DeleteClient(char *clientname);
+void DeleteClient(char *clientname, Controller *info);
 /**
- * @brief Функция добавляет клиента, когда пользователь присылает сообщение о входе. После чего функция отправляет сигнал на рассылку изменений по клиентам
- * 
+ * @brief Функция добавляет клиента, когда пользователь присылает сообщение о
+ * входе. После чего функция отправляет сигнал на рассылку изменений по клиентам
+ *
  * @param clientname - имя клиента
  */
-int AddClient(char *clientname);
+int AddClient(char *clientname, Controller *info);
 
 /**
- * @brief Функция подключает к очереди сообщений и обрабатывает ошибки связанные с этим
- * 
+ * @brief Функция подключает к очереди сообщений и обрабатывает ошибки связанные
+ * с этим
+ *
  * @param queue_name - название очереди
  * @param oflag
- * @param mode 
+ * @param mode
  * @param message_len - длина сообщения в очереди
  * @param number_of_messages - количество сообщений в очереди
- * @return mqd_t 
+ * @return mqd_t
  */
 mqd_t QueueOpen(char *queue_name, int oflag, mode_t mode, int message_len,
                 int number_of_messages);
 
 /**
- * @brief Функция закрывает очередь и обрабатыват ошибки связанные с ее закрытием
- * 
+ * @brief Функция закрывает очередь и обрабатыват ошибки связанные с ее
+ * закрытием
+ *
  * @param queue_id - id очереди
  * @param queue_name - название очереди
  */
@@ -142,28 +149,28 @@ void QueueClose(mqd_t queue_id, char *queue_name);
 // ----------------- ПОТОКИ -------------------
 /**
  * @brief Поток обрабатывает сервисные сообщения от клиентов
- * 
- * @param mqdes_service 
- * @return void* 
+ *
+ * @param mqdes_service
+ * @return void*
  */
 void *ThreadServiceReceive(void *mqdes_service);
 /**
  * @brief Поток обрабатывает очередь сообщений от клиентов
- * 
- * @return void* 
+ *
+ * @return void*
  */
-void *ThreadClMessage();
+void *ThreadClMessage(void *arg);
 /**
  * @brief Поток отправляет сообщения на клиентов
- * 
- * @return void* 
+ *
+ * @return void*
  */
-void *ThreadSend();
+void *ThreadSend(void *arg);
 /**
  * @brief Поток обрабатывает очередь выключения, для завершения потоков
- * 
- * @return void* 
+ *
+ * @return void*
  */
-void *ThreadShutdown();
+void *ThreadShutdown(void *arg);
 
-#endif // SERVER_H
+#endif  // SERVER_H

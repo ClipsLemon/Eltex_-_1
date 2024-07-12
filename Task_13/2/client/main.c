@@ -25,7 +25,7 @@ int main() {
 
   memset(&info.chat_history, 0, sizeof(info.chat_history));
   memset(&info.user_list, 0, sizeof(info.user_list));
-
+  info.history_index = 0;
   info.win_chat_field = newwin(chat_row, chat_col, 0, 0);
 
   info.win_text_field = newwin(text_row, text_col, chat_row, 0);
