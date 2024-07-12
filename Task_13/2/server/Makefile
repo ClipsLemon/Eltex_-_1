@@ -46,5 +46,5 @@ leaks_test: clean $(OBJS) build
 	leaks -atExit -- ./server
 
 clean:
-	rm -fr $(OBJS) ./server ./*.o
+	rm -fr $(OBJ_DIR)/$(SRC_DIR)/* ./server ./*.o
 	rm -fr ./server

@@ -5,7 +5,6 @@ OBJ_DIR = objects
 INTERFACES_DIR = interface
 FILES_FUNC = files_func
 DIR_FUNC = dir_func
-A := $(sudo ps -a)
 
 
 LIBS = -lrt -pthread -lncurses
@@ -43,6 +42,6 @@ leaks_test: clean $(OBJS) build
 	leaks -atExit -- ./client
 
 clean:
-	rm -fr $(OBJS) ./client ./*.o
+	rm -fr $(OBJ_DIR)/$(SRC_DIR)/* ./client ./*.o
 	rm -fr ./client
 	rm -fr log_file.txt
