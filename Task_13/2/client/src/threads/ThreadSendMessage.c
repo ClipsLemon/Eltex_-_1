@@ -23,9 +23,9 @@ void *ThreadSendMessage(void *arg) {
     CreateMessage(&message, info->client_inf.username);
     mq_send(info->mqdes_cl_message, (char *)&message, sizeof(message), 1);
 
-    ClearString(message.datetime, DATE_TIME_SIZE);
-    ClearString(message.username, USERNAME_LEN + 1);
-    ClearString(message.message, CL_MESSAGE_LEN);
+    memset(message.datetime, 0, DATE_TIME_SIZE);
+    memset(message.username, 0, USERNAME_LEN + 1);
+    memset(message.message, 0, CL_MESSAGE_LEN);
     pthread_mutex_unlock(&m1);
   }
   noecho();

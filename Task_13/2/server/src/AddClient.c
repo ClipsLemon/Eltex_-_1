@@ -1,9 +1,6 @@
 #include "../server.h"
 
-/*
-если не получилось добавить (все занято), то -1
-иначе 1
-*/
+
 int AddClient(char *clientname) {
   int is_writed = -1;
   int in_list = 0;

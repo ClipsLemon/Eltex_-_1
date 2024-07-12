@@ -104,23 +104,66 @@ extern Message chat_history[HISTORY_LEN];
 
 // ----------------------------------------------------
 
+
+/**
+ * @brief Функция удаляет клиента, когда пользователь присылает сообщение о выходе. После чего функция отправляет сигнал на рассылку изменений по клиентам
+ * 
+ * @param clientname - имя клиента
+ */
 void DeleteClient(char *clientname);
+/**
+ * @brief Функция добавляет клиента, когда пользователь присылает сообщение о входе. После чего функция отправляет сигнал на рассылку изменений по клиентам
+ * 
+ * @param clientname - имя клиента
+ */
 int AddClient(char *clientname);
-void ParseClientMessage(char *message);
-/*
-Функция создает очередь и обрабатывает ошибки связанные с ее созданием*/
+
+/**
+ * @brief Функция подключает к очереди сообщений и обрабатывает ошибки связанные с этим
+ * 
+ * @param queue_name - название очереди
+ * @param oflag
+ * @param mode 
+ * @param message_len - длина сообщения в очереди
+ * @param number_of_messages - количество сообщений в очереди
+ * @return mqd_t 
+ */
 mqd_t QueueOpen(char *queue_name, int oflag, mode_t mode, int message_len,
                 int number_of_messages);
 
-/*
-Функция закрывает очередь и обрабатыват ошибки связанные с ее закрытием
-*/
+/**
+ * @brief Функция закрывает очередь и обрабатыват ошибки связанные с ее закрытием
+ * 
+ * @param queue_id - id очереди
+ * @param queue_name - название очереди
+ */
 void QueueClose(mqd_t queue_id, char *queue_name);
 
 // ----------------- ПОТОКИ -------------------
+/**
+ * @brief Поток обрабатывает сервисные сообщения от клиентов
+ * 
+ * @param mqdes_service 
+ * @return void* 
+ */
 void *ThreadServiceReceive(void *mqdes_service);
+/**
+ * @brief Поток обрабатывает очередь сообщений от клиентов
+ * 
+ * @return void* 
+ */
 void *ThreadClMessage();
+/**
+ * @brief Поток отправляет сообщения на клиентов
+ * 
+ * @return void* 
+ */
 void *ThreadSend();
+/**
+ * @brief Поток обрабатывает очередь выключения, для завершения потоков
+ * 
+ * @return void* 
+ */
 void *ThreadShutdown();
 
 #endif // SERVER_H

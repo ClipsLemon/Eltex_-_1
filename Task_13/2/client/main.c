@@ -1,23 +1,7 @@
 #include "../color.h"
 #include "client.h"
 
-// FILE *log_file;
-
-// mqd_t mqdes_cl_message;
-// mqd_t mqdes_service;
-// mqd_t mqdes_send;
-// mqd_t mqdes_upd_wind;
-
-// WINDOW *win_chat_field;
-// WINDOW *win_text_field;
-// WINDOW *win_users_field;
-
-// Message chat_history[HISTORY_LEN];
 pthread_mutex_t m1 = PTHREAD_MUTEX_INITIALIZER;
-
-char user_list[USERS_MAX][USERNAME_LEN];
-
-int history_index = 0;
 
 int main() {
   initscr();

@@ -11,12 +11,6 @@ void RemoveNewLineSymbol(char *string) {
   }
 }
 
-void ClearString(char *string, int len) {
-  for (int i = 0; i < len; i++) {
-    string[i] = '\0';
-  }
-}
-
 void GetName(char *string) {
 
   printf("Ограничение по длине %d символов.\n", USERNAME_LEN);

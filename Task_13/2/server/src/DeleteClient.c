@@ -1,9 +1,6 @@
 #include "../server.h"
 
-/*
-если не получилось добавить (все занято), то -1
-иначе 1
-*/
+
 void DeleteClient(char *clientname) {
   for (int i = 0; i < USERS_MAX; i++) {
     // ищем клииента к удалению

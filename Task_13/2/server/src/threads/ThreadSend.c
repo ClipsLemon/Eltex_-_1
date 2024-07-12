@@ -1,9 +1,7 @@
 #include "../../../color.h"
 #include "../../server.h"
 
-/*
-поток рассылает инфоормацию на клиентов
-*/
+
 void *ThreadSend() {
   char send_msg[4];
   unsigned int priority;

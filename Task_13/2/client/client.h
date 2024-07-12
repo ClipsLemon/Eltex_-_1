@@ -59,22 +59,12 @@
 #define DEFAULT_OFLGAS (O_RDONLY)
 #define DEFAULT_MODE (S_IWUSR | S_IRUSR)
 
-typedef struct {
-  int last_message_index;
-  char username[USERNAME_LEN];
-  mqd_t mqdes_client;
-} User;
 
 typedef struct {
   char username[USERNAME_LEN];
   char datetime[DATE_TIME_SIZE];
   char message[CL_MESSAGE_LEN];
 } Message;
-
-typedef struct {
-  char message_type;
-  char username[USERNAME_LEN];
-} ServiceMessage;
 
 typedef struct {
   // один символ на c или d служебные
@@ -99,27 +89,93 @@ typedef struct {
 
 extern pthread_mutex_t m1;
 
-/*
-Функция создает очередь и обрабатывает ошибки связанные с ее созданием*/
+/**
+ * @brief Функция подключает к очереди сообщений и обрабатывает ошибки связанные с этим
+ * 
+ * @param queue_name - название очереди
+ * @param oflag
+ * @param mode 
+ * @param message_len - длина сообщения в очереди
+ * @param number_of_messages - количество сообщений в очереди
+ * @param log_file - название файла для логов
+ * @return mqd_t 
+ */
 mqd_t QueueConnect(char *queue_name, int oflag, mode_t mode, int message_len,
                    int number_of_messages, FILE *log_file);
 
-/*
-Функция закрывает очередь и обрабатыват ошибки связанные с ее закрытием
-*/
+/**
+ * @brief Функция закрывает очередь и обрабатыват ошибки связанные с ее закрытием
+ * 
+ * @param queue_id - id очереди
+ * @param queue_name - название очереди
+ */
 void QueueDisconnect(mqd_t queue_id, char *queue_name);
 
+/**
+ * @brief Функция берет имя у пользователя при логине
+ * ы
+ * @param string - указатель на строку в которую запишется имя
+ */
 void GetName(char *string);
-void ClearString(char *string, int len);
+
+/**
+ * @brief Удаляет символ переноса строки
+ * 
+ * @param string - указатель на строку где удаляем символ
+ */
 void RemoveNewLineSymbol(char *string);
+
+/**
+ * @brief Функция создает 
+ * 
+ * @param message 
+ * @param username 
+ */
 void CreateMessage(Message *message, char *username);
+
+/**
+ * @brief Функция выводит список пользователей
+ * 
+ * @param info - адрес на контроллер
+ */
 void PrintUsersList(Controller *info);
+
+/**
+ * @brief Функция логинит клиента через окно аутентификации
+ * 
+ * @param info - адрес на контроллер
+ */
 void Login(Controller *info);
+
+/**
+ * @brief Функция вывода чат сообщений
+ * 
+ * @param info - адрес на контроллер
+ */
 void PrintChat(Controller *info);
 
 // ----------------- ПОТОКИ -------------------
+/**
+ * @brief Поток ожидающий сообщений от сервера
+ * 
+ * @param arg 
+ * @return void* 
+ */
 void *ThreadReceive(void *arg);
+/**
+ * @brief Поток отправляющий сервисные сообщения о входе и выходе с сервера
+ * 
+ * @param arg 
+ * @return void* 
+ */
 void *ThreadSendServiceMessage(void *arg);
+
+/**
+ * @brief Поток отправляющий сообщения на сервер
+ * 
+ * @param arg 
+ * @return void* 
+ */
 void *ThreadSendMessage(void *arg);
 
 #endif // CLIENT_H
