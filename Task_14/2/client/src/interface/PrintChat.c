@@ -12,7 +12,7 @@ void PrintChat(Controller *info) {
        i < info->chat->history_index && l < getmaxy(info->win_chat_field) - 1;
        i++, l++) {
     mvwprintw(info->win_chat_field, l, 2, "%-20s | %-17s | %s",
-              &(info->chat->chat_history[i].username[1]),
+              info->chat->chat_history[i].username,
               info->chat->chat_history[i].datetime,
               info->chat->chat_history[i].message);
   }

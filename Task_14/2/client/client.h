@@ -60,28 +60,29 @@ typedef struct {
 } Message;
 
 typedef struct {
-  char user_list[USERS_MAX][USERNAME_LEN];
   int history_index;
   int readed_index;
+  char user_list[USERS_MAX][USERNAME_LEN];
   Message chat_history[HISTORY_LEN];
 } Chat;
 
 typedef struct {
   // индекс прочитанной истории чата
+  Chat *chat;
   FILE *log_file;
-  char username[USERNAME_LEN];
   sem_t *send_message;
   WINDOW *win_chat_field;
   WINDOW *win_text_field;
   WINDOW *win_users_field;
-  Chat *chat;
+  char username[USERNAME_LEN];
 } Controller;
 
+extern int shutdown;
 extern pthread_mutex_t m1;
 
 /**
  * @brief Функция берет имя у пользователя при логине
- * ы
+ * 
  * @param string - указатель на строку в которую запишется имя
  */
 void GetName(char *string);
@@ -121,6 +122,12 @@ void Login(Controller *info);
  * @param info - адрес на контроллер
  */
 void PrintChat(Controller *info);
+/**
+ * @brief Функция обновляет поле ввода текста
+ *
+ * @param info - адрес на Controller
+ */
+void PrintTextField(Controller *info);
 
 // ----------------- ПОТОКИ -------------------
 
@@ -131,9 +138,20 @@ void PrintChat(Controller *info);
  * @return void*
  */
 void *ThreadSendMessage(void *arg);
+/**
+ * @brief поток отрисовки чата, отрисовывает чат раз в секунду
+ *
+ * @param arg указатель на Controller
+ * @return void*
+ */
 void *ThreadPrintChat(void *arg);
+/**
+ * @brief поток поиска пользователей в чате. Анализирует чат на предмет
+ * сообщений о входе и добавляет их в список пользователей
+ *
+ * @param arg указатель на Controller
+ * @return void*
+ */
 void *ThreadFindUsers(void *arg);
-
-void PrintTextField(Controller *info);
 
 #endif // CLIENT_H

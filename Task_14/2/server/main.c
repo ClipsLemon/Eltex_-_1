@@ -26,10 +26,6 @@ int main() {
   memset(&info->user_list, 0, sizeof(info->user_list));
 
   // создаем семафор на выключение
-  sem_t *shutdown = sem_open(SEM_NAME, DEFAULT_OFLGAS, DEFAULT_MODE, 0);
-  if (shutdown == SEM_FAILED) {
-    printf("SEMAPHORE ERROR: %s\n", strerror(errno));
-  }
   sem_t *send_message;
   // создаем семафор на отправку сообщений
   send_message = sem_open(SEM_SEND_MESS, O_CREAT | O_RDWR, DEFAULT_MODE, 0);
@@ -46,29 +42,10 @@ int main() {
 
   pthread_join(exit_thread, NULL);
 
-  sem_close(shutdown);
   sem_close(send_message);
   sem_unlink(SEM_SEND_MESS);
-  sem_unlink(SEM_NAME);
 
   printf(BLUE "LOG: server is closed\n" END_COLOR);
-
-  // запускаем потоки сервера
-  // pthread_t service_thread;
-  // pthread_t cl_message_thread;
-  // pthread_t send_thread;
-  // pthread_t shutdown_thread;
-
-  // pthread_create(&service_thread, NULL, ThreadServiceReceive, &info);
-  // pthread_create(&cl_message_thread, NULL, ThreadClMessage, &info);
-  // pthread_create(&send_thread, NULL, ThreadSend, &info);
-  // pthread_create(&shutdown_thread, NULL, ThreadShutdown, &info);
-
-  // end server initialization
-
-  // отключаем все очереди, чтобы они не повисали в системе
-  // TODO: разослать во очереди сообщений что сервер выключается и завершить все
-  // потоки
 
   return 0;
 }

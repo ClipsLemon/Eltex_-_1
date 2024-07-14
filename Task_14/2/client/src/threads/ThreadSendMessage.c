@@ -19,6 +19,7 @@ void *ThreadSendMessage(void *arg) {
       strncpy(info->chat->chat_history[info->chat->history_index].message,
               "logged out", 11);
       info->chat->history_index++;
+      shutdown = 1;
       break;
     }
     PrintTextField(info);

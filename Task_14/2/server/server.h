@@ -45,7 +45,6 @@
 #define MESSAGE_PACK_LEN (USERNAME_LEN + DATE_TIME_SIZE + CL_MESSAGE_LEN)
 
 #define SHM_NAME "messenger"
-#define SEM_NAME "/shutdown_semaphore"
 
 #define DEFAULT_OFLGAS (O_CREAT | O_RDWR)
 #define DEFAULT_MODE (S_IWUSR | S_IRUSR)

@@ -5,7 +5,7 @@ void *ThreadFindUsers(void *arg) {
   // последний прочитанный индекс, что бы лишний раз не бегать
 
   // ищем клиентов в списке сообщений
-  while (1) {
+  while (shutdown == 0) {
     // ищем с последнего сообщения
     for (; info->chat->readed_index < info->chat->history_index;
          info->chat->readed_index++) {

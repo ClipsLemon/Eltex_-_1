@@ -2,6 +2,7 @@
 #include "client.h"
 
 pthread_mutex_t m1 = PTHREAD_MUTEX_INITIALIZER;
+int shutdown;
 
 int main() {
   initscr();
@@ -9,6 +10,8 @@ int main() {
   noecho();
   cbreak();
   curs_set(FALSE);
+
+  shutdown = 0;
 
   int scr_row = getmaxy(stdscr);
   int scr_col = getmaxx(stdscr);
@@ -65,8 +68,6 @@ int main() {
 
   Login(&info);
   clear();
-  // PrintChat(&info);
-  // PrintUsersList(&info);
 
   pthread_t send_message_thread;
   pthread_t print_chat_thread;
@@ -77,6 +78,8 @@ int main() {
   pthread_create(&find_users_thread, NULL, ThreadFindUsers, &info);
 
   pthread_join(send_message_thread, NULL);
+  pthread_join(print_chat_thread, NULL);
+  pthread_join(find_users_thread, NULL);
 
   sem_close(shutdown);
 

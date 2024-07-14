@@ -4,7 +4,7 @@ void *ThreadPrintChat(void *arg) {
   Controller *info = (Controller *)arg;
   fputs("PRINT CHAT THREAD HAS BEEN CREATED\n", info->log_file);
 
-  while (1) {
+  while (shutdown == 0) {
     pthread_mutex_lock(&m1);
     PrintChat(info);
     PrintUsersList(info);
