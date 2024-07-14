@@ -72,18 +72,18 @@ typedef struct {
 } ClientInf;
 
 typedef struct {
+  Message chat_history[HISTORY_LEN];
+  ClientInf client_inf;
+  FILE *log_file;
+  WINDOW *win_chat_field;
+  WINDOW *win_text_field;
+  WINDOW *win_users_field;
   mqd_t mqdes_cl_message;
   mqd_t mqdes_service;
   mqd_t mqdes_send;
   mqd_t mqdes_server_msg;
   int history_index;
-  Message chat_history[HISTORY_LEN];
-  FILE *log_file;
-  WINDOW *win_chat_field;
-  WINDOW *win_text_field;
-  WINDOW *win_users_field;
   char user_list[USERS_MAX][USERNAME_LEN];
-  ClientInf client_inf;
 } Controller;
 
 extern pthread_mutex_t m1;
@@ -179,4 +179,4 @@ void *ThreadSendServiceMessage(void *arg);
  */
 void *ThreadSendMessage(void *arg);
 
-#endif  // CLIENT_H
+#endif // CLIENT_H

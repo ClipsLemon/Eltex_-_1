@@ -69,11 +69,10 @@
 typedef struct {
   // -1 - значит пользователя не существует
   int last_message_index;
+  mqd_t mqdes_client;
   char username[USERNAME_LEN];
   // + на / в начале названия
   char queue_name[USERNAME_LEN + 1];
-  mqd_t mqdes_client;
-
 } User;
 
 typedef struct {
@@ -88,6 +87,7 @@ typedef struct {
 } ServiceMessage;
 
 typedef struct {
+  Message chat_history[HISTORY_LEN];
   User user_list[USERS_MAX];
 
   mqd_t mqdes_service;
@@ -98,7 +98,6 @@ typedef struct {
   mqd_t mqdes_shutdown;
   int history_index;
 
-  Message chat_history[HISTORY_LEN];
 } Controller;
 
 extern pthread_mutex_t m1;
@@ -173,4 +172,4 @@ void *ThreadSend(void *arg);
  */
 void *ThreadShutdown(void *arg);
 
-#endif  // SERVER_H
+#endif // SERVER_H

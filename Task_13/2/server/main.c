@@ -8,7 +8,6 @@ int main() {
   // атрибуты
   Controller info;
   info.history_index = 0;
-
   info.mqdes_service = QueueOpen(SERVICE_QUEUE, DEFAULT_OFLGAS, DEFAULT_MODE,
                                  SERVICE_MESSAGE_LEN, MAX_SERVICE_MESSAGE);
   info.mqdes_cl_message =
