@@ -9,7 +9,7 @@ server_command = './server'
 client_command = './client'
 
 # Количество клиентских потоков
-num_client_threads = 100000
+num_client_threads = 10000
 
 # Таймаут для проверки состояния сервера
 server_check_interval = 5

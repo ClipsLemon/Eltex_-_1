@@ -33,28 +33,29 @@ mqd_t mqdes_client_queue;
 
 pthread_mutex_t m1 = PTHREAD_MUTEX_INITIALIZER;
 
-struct ExitStruct {
-  int listener_sfd;
-  struct sockaddr_in listener_addr;
-};
 
 void *ThreadExit(void *arg) {
   printf(GREEN "EXIT THREAD HAS BEEN CREATED\n" END_COLOR);
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  char ext[6];
 
-  struct ExitStruct *inf = (struct ExitStruct *)arg;
+  struct sockaddr_in tmp;
+  inet_pton(AF_INET, IP_ADDR, &tmp.sin_addr.s_addr);
+  tmp.sin_family = AF_INET;
+  tmp.sin_port = htons(SERV_PORT);
 
-  char ext[5];
-  memset(ext, 0, 5);
+  memset(ext, 0, 6);
 
   while (strncmp(ext, "exit", 5) != 0) {
     fgets(ext, 5, stdin);
-    ext[strcspn(ext, "\n")] = 0;
   }
   // если пользователь сервера вводит exit, то коннектимся к самому себе что бы
   // сбить accept в ListenClient и ставит shtdwn в 0
   shtdwn = 0;
-  connect(inf->listener_sfd, (struct sockaddr *)&(inf->listener_addr),
-          sizeof(inf->listener_addr));
+
+  if (connect(sock, (struct sockaddr *)&tmp, sizeof(tmp)) == -1) {
+    printf(RED "CONNECT ERROR: %s" END_COLOR, strerror(errno));
+  }
   printf(GREEN "EXIT THREAD HAS BEEN CLOSED\n" END_COLOR);
 }
 
@@ -118,6 +119,7 @@ void *AnswerClient() {
     }
     printf(GREEN "CLOSE CLIENT SOCKET %d\n" END_COLOR, client_fd);
   }
+  printf(GREEN "THREAD HAS BEEN CLOSED\n" END_COLOR);
 
   return NULL;
 }
@@ -165,12 +167,8 @@ void ListenClient(int listener_sfd, struct sockaddr_in *listener_addr,
 
   pthread_t thread_list[MAX_THREAD];
   pthread_t thread_exit;
-  struct ExitStruct inf;
-  inf.listener_addr.sin_addr.s_addr = listener_addr->sin_addr.s_addr;
-  inf.listener_addr.sin_family = listener_addr->sin_family;
-  inf.listener_addr.sin_port = listener_addr->sin_port;
 
-  pthread_create(&thread_exit, NULL, ThreadExit, &inf);
+  pthread_create(&thread_exit, NULL, ThreadExit, NULL);
   // создаем потоки
   for (int i = 0; i < MAX_THREAD; i++) {
     pthread_create(&(thread_list[i]), NULL, AnswerClient, NULL);
@@ -179,7 +177,6 @@ void ListenClient(int listener_sfd, struct sockaddr_in *listener_addr,
 
   while (shtdwn) {
     tmp_fd = accept(listener_sfd, (struct sockaddr *)listener_addr, &sock_len);
-
     // отправляем дескриптор
     if (mq_send(mqdes_client_queue, (char *)&tmp_fd, MESSAGE_LEN, 1) == -1) {
       printf(RED "SEND ERROR: %s\n" END_COLOR, strerror(errno));
@@ -192,12 +189,6 @@ void ListenClient(int listener_sfd, struct sockaddr_in *listener_addr,
     mq_send(mqdes_client_queue, (char *)&tmp_fd, MESSAGE_LEN, 1);
   }
   // ждем завершения всех потоков
-  for (int i = 0; i < MAX_THREAD; i++) {
-    if (pthread_join(thread_list[i], NULL) != 0) {
-      printf(RED "JOIN THREAD ERROR: %s\n" END_COLOR, strerror(errno));
-    }
-    printf(GREEN "THREAD %d/%d IS CLOSED\n" END_COLOR, i + 1, MAX_THREAD);
-  }
   printf(GREEN "LISTENER END\n" END_COLOR);
 }
 
@@ -207,19 +198,15 @@ int main() {
   struct sockaddr_in listener_addr;
 
   int opt = 1;
-
   struct mq_attr attr;
   attr.mq_flags = 0;
   attr.mq_maxmsg = MAX_MESSAGE;
   attr.mq_msgsize = MESSAGE_LEN;
   attr.mq_curmsgs = 0;
 
-  // отлинковываем очередь. На случай, если сервер завершил работу некорректно
-  QueueClose(mqdes_client_queue, QUEUE_NAME);
-
   while (1) {
-    if (mqdes_client_queue =
-            mq_open(QUEUE_NAME, DEFAULT_OFLGAS, DEFAULT_MODE, &attr) == -1) {
+    if ((mqdes_client_queue =
+             mq_open(QUEUE_NAME, DEFAULT_OFLGAS, DEFAULT_MODE, &attr)) == -1) {
       printf(RED "ERROR: can\'t CREATE queue: %s\n" END_COLOR, QUEUE_NAME);
     } else {
       printf(GREEN "LOG: A queue %s has been CREATED successfully\n" END_COLOR,
