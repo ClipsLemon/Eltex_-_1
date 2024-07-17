@@ -25,6 +25,38 @@ int shtdwn = 1;
 
 pthread_mutex_t m1 = PTHREAD_MUTEX_INITIALIZER;
 
+void *ThreadExit() {
+  printf(GREEN "EXIT THREAD HAS BEEN CREATED\n" END_COLOR);
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  char ext[6];
+  char buff[SIZE_BUFF];
+
+  struct sockaddr_in tmp;
+  inet_pton(AF_INET, IP_ADDR, &tmp.sin_addr.s_addr);
+  tmp.sin_family = AF_INET;
+  tmp.sin_port = htons(SERV_PORT);
+
+  memset(ext, 0, 6);
+
+  while (strncmp(ext, "exit", 5) != 0) {
+    fgets(ext, 5, stdin);
+  }
+  // если пользователь сервера вводит exit, то коннектимся к самому себе что бы
+  // сбить accept в ListenClient и ставит shtdwn в 0
+  shtdwn = 0;
+
+  if (connect(sock, (struct sockaddr *)&tmp, sizeof(tmp)) == -1) {
+    printf(RED "CONNECT ERROR: %s" END_COLOR, strerror(errno));
+  }
+  strncpy(buff, "time", 5);
+  send(sock, buff, SIZE_BUFF, 0);
+  strncpy(buff, "ACCEPT", 7);
+  send(sock, buff, SIZE_BUFF, 0);
+
+  printf(GREEN "EXIT THREAD HAS BEEN CLOSED\n" END_COLOR);
+  return NULL;
+}
+
 /**
  * @brief Поток ожидает от пользователя ключевого слова time. В ответ отправляет
  * время и завершает с ним работу.
@@ -87,6 +119,9 @@ void ListenClient(int listener_sfd, struct sockaddr_in *listener_addr,
   int *client_list;
   int curr_client = 0;
   pthread_t *thread_list;
+  pthread_t thread_exit;
+  pthread_create(&thread_exit, NULL, ThreadExit, NULL);
+
   client_list = (int *)calloc(cl_list_len, sizeof(int) * cl_list_len);
   thread_list =
       (pthread_t *)calloc(cl_list_len, sizeof(pthread_t) * cl_list_len);
@@ -118,15 +153,7 @@ void ListenClient(int listener_sfd, struct sockaddr_in *listener_addr,
   printf(GREEN "LISTENER END\n" END_COLOR);
 }
 
-void sigint_handler(int signal) { shtdwn = 0; }
-
 int main() {
-  struct sigaction sg;
-  sg.sa_flags = SA_RESTART;
-  sg.sa_handler = sigint_handler;
-  sigemptyset(&sg.sa_mask);
-
-  sigaction(SIGINT, &sg, NULL);
 
   int listener_sfd, ip_addr, port;
   // список сокетов клиентов
