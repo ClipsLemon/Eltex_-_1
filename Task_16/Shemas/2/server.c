@@ -52,7 +52,7 @@ void *AnswerClient(void *arg) {
     pthread_cond_wait(&client->client_accepted, &m1);
 
     pthread_mutex_unlock(&m1);
-    if (recv(client->client_fd, buff, SIZE_BUFF, 0) == -1) {
+    if (recv(client->client_fd, buff, SIZE_BUFF, 0) == -1 && shtdwn) {
       printf(RED "RECEIVE ERROR: %s\n" END_COLOR, strerror(errno));
     }
     printf(GREEN "GET MESSAGE FROM CLIENT %d\n" END_COLOR, client->client_fd);
@@ -68,18 +68,18 @@ void *AnswerClient(void *arg) {
     // Формируем строку в формате YYYY.MM.DD | HH.MM.SS
     strftime(buff, sizeof(buff), "%Y.%m.%d | %H:%M:%S", timeinfo);
 
-    if (send(client->client_fd, buff, SIZE_BUFF, 0) == -1) {
+    if (send(client->client_fd, buff, SIZE_BUFF, 0) == -1 && shtdwn) {
       printf(RED "SEND ERROR: %s\n" END_COLOR, strerror(errno));
     }
     printf(GREEN "SEND MESSAGE TO CLIENT %d\n" END_COLOR, client->client_fd);
 
     // ждем сообщение о получении клиентом времени для закрытия сокета
-    if (recv(client->client_fd, buff, SIZE_BUFF, 0) == -1) {
+    if (recv(client->client_fd, buff, SIZE_BUFF, 0) == -1 && shtdwn) {
       printf(RED "RECEIVE ERROR: %s\n" END_COLOR, strerror(errno));
     }
 
     pthread_mutex_lock(&m1);
-    if (close(client->client_fd) == -1) {
+    if (close(client->client_fd) == -1 && shtdwn) {
       printf(RED "CLOSE CLIENT SOCKET ERROR %d: %s\n" END_COLOR,
              client->client_fd, strerror(errno));
     }
