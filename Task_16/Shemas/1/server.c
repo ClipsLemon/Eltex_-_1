@@ -13,71 +13,17 @@
 
 #include "../color.h"
 
-#define LISTEN_BACKLOG 10
+#define LISTEN_BACKLOG 4
 #define IP_ADDR "127.0.0.1"
 #define SIZE_BUFF 100
 #define MAX_PORT 65535
 #define SERV_PORT 9524
 #define MAX_THREAD 10
 
-// структура хранит информацию о подключениях клиентов
-typedef struct {
-  int *cl_list_len;
-  // fd
-  int *client_list;
-  // индекс текущего клиента
-  int curr_client;
-} ClientInf;
+int cl_list_len = 100;
+int shtdwn = 1;
 
 pthread_mutex_t m1 = PTHREAD_MUTEX_INITIALIZER;
-
-/**
- * @brief Функция закрывает сокет и после закрытия перевыделяет память в
- * inf->client_list[curr_client], чтобы удалить ненужный дескриптор
- *
- * @param inf - структура ClientInf хранящая в себе указатели на длину списка
- * дескрипторов клииентов, сам список и индекс текущего клиента
- */
-void CloseSocket(ClientInf *inf) {
-  printf(YELLOW "START OF SOCKET %d CLOSURE\n" END_COLOR,
-         inf->client_list[inf->curr_client]);
-
-  if (close(inf->client_list[inf->curr_client]) == -1) {
-    printf(RED "CLOSE ERROR %d: %s\n" END_COLOR,
-           inf->client_list[inf->curr_client], strerror(errno));
-  } else {
-    int *copy_client_list = calloc(*(inf->cl_list_len) - 1, sizeof(int));
-    if (copy_client_list == NULL) {
-      printf(RED "CLOSE SOCKET CALLOC ERROR NULL: %s\n" END_COLOR,
-             strerror(errno));
-      printf(RED "SIZE = %d\n" END_COLOR, *inf->cl_list_len - 1);
-    }
-    // создаем копию массива дескрипторов на один меньше
-    // копируем все до удаляемого дескриптора
-    for (int i = 0; i < inf->curr_client; i++) {
-      copy_client_list[i] = inf->client_list[i];
-    }
-    // копируем все после удаляемого дескриптора
-    for (int i = inf->curr_client + 1; i < *(inf->cl_list_len); i++) {
-      copy_client_list[i - 1] = inf->client_list[i];
-    }
-
-    *(inf->cl_list_len) -= 1;
-    // удаляем старую память
-    // free(inf->client_list);
-    // и меняем значение указателя
-    inf->client_list = copy_client_list;
-  }
-
-  printf(YELLOW "END OF SOCKET %d CLOSURE\n" END_COLOR,
-         inf->client_list[inf->curr_client]);
-}
-
-void CopyList(int *list, int *copy_list, int len) {
-  for (int i = 0; i < len; i++) {
-    copy_list[i] = list[i];
-  }
-}
 
 /**
  * @brief Поток ожидает от пользователя ключевого слова time. В ответ отправляет
@@ -87,12 +33,13 @@ void CopyList(int *list, int *copy_list, int len) {
  * @return void*
  */
 void *AnswerClient(void *arg) {
-  ClientInf *inf = (ClientInf *)arg;
+  int *client_fd = (int *)arg;
   char buff[SIZE_BUFF];
   // слушаем клиента
-  if (recv(inf->client_list[inf->curr_client], buff, SIZE_BUFF, 0) == -1) {
+  if (recv(*client_fd, buff, SIZE_BUFF, 0) == -1) {
     printf(RED "RECEIVE ERROR: %s\n" END_COLOR, strerror(errno));
   }
+  printf(GREEN "GET MESSAGE FROM CLIENT %d\n" END_COLOR, *client_fd);
   // клиент сможет отправить только "time", не обрабатываем информацию, а сразу
   // готовим ответ
 
@@ -107,17 +54,25 @@ void *AnswerClient(void *arg) {
   // Формируем строку в формате YYYY.MM.DD | HH.MM.SS
   strftime(buff, sizeof(buff), "%Y.%m.%d | %H:%M:%S", timeinfo);
 
-  if (send(inf->client_list[inf->curr_client], buff, SIZE_BUFF, 0) == -1) {
+  if (send(*client_fd, buff, SIZE_BUFF, 0) == -1) {
     printf(RED "SEND ERROR: %s\n" END_COLOR, strerror(errno));
   }
+  printf(GREEN "SEND MESSAGE TO CLIENT %d\n" END_COLOR, *client_fd);
+
   // ждем сообщение о получении клиентом времени для закрытия сокета
-  if (recv(inf->client_list[inf->curr_client], buff, SIZE_BUFF, 0) == -1) {
+  if (recv(*client_fd, buff, SIZE_BUFF, 0) == -1) {
     printf(RED "RECEIVE ERROR: %s\n" END_COLOR, strerror(errno));
   }
 
   pthread_mutex_lock(&m1);
-  CloseSocket(inf);
+  if (close(*client_fd) == -1) {
+    printf(RED "CLOSE CLIENT SOCKET ERROR %d: %s\n" END_COLOR, *client_fd,
+           strerror(errno));
+    char test[15];
+    scanf("%s", test);
+  }
   pthread_mutex_unlock(&m1);
+  printf(GREEN "CLOSE CLIENT SOCKET %d\n" END_COLOR, *client_fd);
 
   return NULL;
 }
@@ -129,71 +84,60 @@ void *AnswerClient(void *arg) {
  * @return * void
  */
 void ListenClient(int listener_sfd, struct sockaddr_in *listener_addr,
-                  socklen_t sock_len, int *cl_list_len, int *client_list) {
+                  socklen_t sock_len) {
   printf(GREEN "LISTENER START\n" END_COLOR);
-  pthread_t thread_list[MAX_THREAD];
+  int *client_list;
   int curr_client = 0;
-  *cl_list_len = 12;
-  // в этот массив передается информацию о списке клиентов, длине списка и
-  // текущем клиенте. используется для потоков.
-  ClientInf inf_list[MAX_THREAD];
+  pthread_t *thread_list;
+  client_list = (int *)calloc(cl_list_len, sizeof(int) * cl_list_len);
+  thread_list =
+      (pthread_t *)calloc(cl_list_len, sizeof(pthread_t) * cl_list_len);
+
   int tmp_fd;
-  client_list = calloc(*cl_list_len, sizeof(int));
-  int *copy_list = NULL;
-  // ждем подключения от клиента
-  while (1) {
+  while (shtdwn) {
     tmp_fd = accept(listener_sfd, (struct sockaddr *)listener_addr, &sock_len);
-    printf(BLUE "CLIENT ACCEPTED: FD %d\n" END_COLOR, tmp_fd);
-
     pthread_mutex_lock(&m1);
-    client_list[*cl_list_len - 1] = tmp_fd;
-    /*
-    Критическая секция.
-    Возможно одновременное изменение client_list и cl_list_len в функции
-    CloseSocket
-    */
-    curr_client = *cl_list_len - 1;
-
-    (*cl_list_len)++;
-    printf("NEXT SIZE: %d\n", *cl_list_len);
-    // копируем все и перевыделяем память
-    if (copy_list != NULL) {
-      free(copy_list);
-    }
-    copy_list = calloc(*cl_list_len, sizeof(int));
-    CopyList(client_list, copy_list, (*cl_list_len) - 1);
-    client_list = copy_list;
-    // client_list = (int *)realloc(client_list, *cl_list_len);
-
-    if (client_list == NULL) {
-      printf(RED "REALLOC ERROR\n" END_COLOR);
+    client_list[curr_client] = tmp_fd;
+    if (curr_client == cl_list_len - 1) {
+      cl_list_len += 100;
+      client_list = (int *)realloc(client_list, sizeof(int) * cl_list_len);
+      thread_list =
+          (pthread_t *)realloc(thread_list, sizeof(pthread_t) * cl_list_len);
     }
     pthread_mutex_unlock(&m1);
-    // готовим структуру для потока
-    inf_list[curr_client].cl_list_len = cl_list_len;
-    inf_list[curr_client].client_list = client_list;
-    inf_list[curr_client].curr_client = curr_client;
-
-    // создаем поток под ответ для клиента
-    pthread_create(&thread_list[curr_client], NULL, AnswerClient,
-                   &(inf_list[curr_client]));
+    if (pthread_create(&thread_list[curr_client], NULL, AnswerClient,
+                       &client_list[curr_client]) != 0) {
+      printf(RED "THREAD CREATE ERROR: %s" END_COLOR, strerror(errno));
+    }
+    curr_client++;
   }
-
+  // ждем закрытия всех потоков, дорабатываем с клиентами
+  for (int i = 0; i < cl_list_len; i++) {
+    pthread_join(thread_list[i], NULL);
+  }
+  free(thread_list);
+  free(client_list);
   printf(GREEN "LISTENER END\n" END_COLOR);
 }
 
-int main() {
+void sigint_handler(int signal) { shtdwn = 0; }
 
-  int listener_sfd, cl_list_len, ip_addr, port;
+int main() {
+  struct sigaction sg;
+  sg.sa_flags = SA_RESTART;
+  sg.sa_handler = sigint_handler;
+  sigemptyset(&sg.sa_mask);
+
+  sigaction(SIGINT, &sg, NULL);
+
+  int listener_sfd, ip_addr, port;
   // список сокетов клиентов
-  int *client_list;
   struct sockaddr_in listener_addr;
 
   int opt = 1;
 
   socklen_t sock_len = sizeof(listener_addr);
 
-  cl_list_len = 1;
   listener_sfd = socket(AF_INET, SOCK_STREAM, 0);
 
   // Настраиваем сокет для повторного использования адреса и порта
@@ -232,8 +176,7 @@ int main() {
   }
 
   // начинаем слушать клиентов
-  ListenClient(listener_sfd, &listener_addr, sock_len, &cl_list_len,
-               client_list);
+  ListenClient(listener_sfd, &listener_addr, sock_len);
 
   return 0;
 }

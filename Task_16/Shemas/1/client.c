@@ -10,7 +10,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define LISTEN_BACKLOG 10
+#define LISTEN_BACKLOG 4
 #define IP_ADDR "127.0.0.1"
 #define SIZE_BUFF 100
 #define MAX_PORT 65535
