@@ -18,10 +18,18 @@
 #define SIZE_BUFF 100
 #define MAX_PORT 65535
 #define SERV_PORT 9524
-#define MAX_THREAD 10
+#define MAX_THREAD 100
+#define THREAD_IS_FREE -2
 
 int cl_list_len = 100;
 int shtdwn = 1;
+
+typedef struct {
+  pthread_t answer_thread;
+  int client_fd;
+  // условие, что сервер принял клиента
+  pthread_cond_t client_accepted;
+} Client;
 
 pthread_mutex_t m1 = PTHREAD_MUTEX_INITIALIZER;
 
@@ -33,44 +41,54 @@ pthread_mutex_t m1 = PTHREAD_MUTEX_INITIALIZER;
  * @return void*
  */
 void *AnswerClient(void *arg) {
-  int *client_fd = (int *)arg;
+  printf(GREEN "START THREAD\n" END_COLOR);
+  Client *client = (Client *)arg;
+
   char buff[SIZE_BUFF];
   // слушаем клиента
-  if (recv(*client_fd, buff, SIZE_BUFF, 0) == -1) {
-    printf(RED "RECEIVE ERROR: %s\n" END_COLOR, strerror(errno));
+  while (shtdwn) {
+    pthread_mutex_lock(&m1);
+
+    pthread_cond_wait(&client->client_accepted, &m1);
+
+    pthread_mutex_unlock(&m1);
+    if (recv(client->client_fd, buff, SIZE_BUFF, 0) == -1) {
+      printf(RED "RECEIVE ERROR: %s\n" END_COLOR, strerror(errno));
+    }
+    printf(GREEN "GET MESSAGE FROM CLIENT %d\n" END_COLOR, client->client_fd);
+    // клиент сможет отправить только "time", не обрабатываем информацию, а
+    // сразу готовим ответ
+
+    time_t rawtime;
+    struct tm *timeinfo;
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    // Формируем строку в формате YYYY.MM.DD | HH.MM.SS
+    strftime(buff, sizeof(buff), "%Y.%m.%d | %H:%M:%S", timeinfo);
+
+    if (send(client->client_fd, buff, SIZE_BUFF, 0) == -1) {
+      printf(RED "SEND ERROR: %s\n" END_COLOR, strerror(errno));
+    }
+    printf(GREEN "SEND MESSAGE TO CLIENT %d\n" END_COLOR, client->client_fd);
+
+    // ждем сообщение о получении клиентом времени для закрытия сокета
+    if (recv(client->client_fd, buff, SIZE_BUFF, 0) == -1) {
+      printf(RED "RECEIVE ERROR: %s\n" END_COLOR, strerror(errno));
+    }
+
+    pthread_mutex_lock(&m1);
+    if (close(client->client_fd) == -1) {
+      printf(RED "CLOSE CLIENT SOCKET ERROR %d: %s\n" END_COLOR,
+             client->client_fd, strerror(errno));
+    }
+    printf(GREEN "CLOSE CLIENT SOCKET %d\n" END_COLOR, client->client_fd);
+    client->client_fd = THREAD_IS_FREE;
+    pthread_mutex_unlock(&m1);
   }
-  printf(GREEN "GET MESSAGE FROM CLIENT %d\n" END_COLOR, *client_fd);
-  // клиент сможет отправить только "time", не обрабатываем информацию, а сразу
-  // готовим ответ
 
-  time_t rawtime;
-  struct tm *timeinfo;
-
-  time(&rawtime);
-  timeinfo = localtime(&rawtime);
-
-  // Буфер для хранения строки с датой и временем
-
-  // Формируем строку в формате YYYY.MM.DD | HH.MM.SS
-  strftime(buff, sizeof(buff), "%Y.%m.%d | %H:%M:%S", timeinfo);
-
-  if (send(*client_fd, buff, SIZE_BUFF, 0) == -1) {
-    printf(RED "SEND ERROR: %s\n" END_COLOR, strerror(errno));
-  }
-  printf(GREEN "SEND MESSAGE TO CLIENT %d\n" END_COLOR, *client_fd);
-
-  // ждем сообщение о получении клиентом времени для закрытия сокета
-  if (recv(*client_fd, buff, SIZE_BUFF, 0) == -1) {
-    printf(RED "RECEIVE ERROR: %s\n" END_COLOR, strerror(errno));
-  }
-
-  pthread_mutex_lock(&m1);
-  if (close(*client_fd) == -1) {
-    printf(RED "CLOSE CLIENT SOCKET ERROR %d: %s\n" END_COLOR, *client_fd,
-           strerror(errno));
-  }
-  pthread_mutex_unlock(&m1);
-  printf(GREEN "CLOSE CLIENT SOCKET %d\n" END_COLOR, *client_fd);
+  printf(GREEN "END THREAD\n" END_COLOR);
 
   return NULL;
 }
@@ -84,37 +102,40 @@ void *AnswerClient(void *arg) {
 void ListenClient(int listener_sfd, struct sockaddr_in *listener_addr,
                   socklen_t sock_len) {
   printf(GREEN "LISTENER START\n" END_COLOR);
-  int *client_list;
-  int curr_client = 0;
-  pthread_t *thread_list;
-  client_list = (int *)calloc(cl_list_len, sizeof(int) * cl_list_len);
-  thread_list =
-      (pthread_t *)calloc(cl_list_len, sizeof(pthread_t) * cl_list_len);
-
   int tmp_fd;
+
+  Client client_list[MAX_THREAD];
+
+  // создаем потоки
+  for (int i = 0; i < MAX_THREAD; i++) {
+    client_list[i].client_fd = THREAD_IS_FREE;
+    pthread_cond_init(&client_list[i].client_accepted, NULL);
+    pthread_create(&(client_list[i].answer_thread), NULL, AnswerClient,
+                   &(client_list[i]));
+  }
+
   while (shtdwn) {
     tmp_fd = accept(listener_sfd, (struct sockaddr *)listener_addr, &sock_len);
+
+    // находим ближайший свободный поток
     pthread_mutex_lock(&m1);
-    client_list[curr_client] = tmp_fd;
-    if (curr_client == cl_list_len - 1) {
-      cl_list_len += 100;
-      client_list = (int *)realloc(client_list, sizeof(int) * cl_list_len);
-      thread_list =
-          (pthread_t *)realloc(thread_list, sizeof(pthread_t) * cl_list_len);
+    for (int i = 0; i < MAX_THREAD; i++) {
+
+      if (client_list[i].client_fd == THREAD_IS_FREE) {
+        client_list[i].client_fd = tmp_fd;
+        printf(YELLOW "THREAD %d START WORK WTIH CLIENT %d\n" END_COLOR, i,
+               client_list[i].client_fd);
+        pthread_cond_signal(&client_list[i].client_accepted);
+        break;
+      }
     }
     pthread_mutex_unlock(&m1);
-    if (pthread_create(&thread_list[curr_client], NULL, AnswerClient,
-                       &client_list[curr_client]) != 0) {
-      printf(RED "THREAD CREATE ERROR: %s" END_COLOR, strerror(errno));
-    }
-    curr_client++;
   }
-  // ждем закрытия всех потоков, дорабатываем с клиентами
-  for (int i = 0; i < cl_list_len; i++) {
-    pthread_join(thread_list[i], NULL);
+  // убиваем все потоки закрываем открытые сокеты
+  for (int i = 0; i < MAX_THREAD; i++) {
+    pthread_cond_signal(&client_list[i].client_accepted);
+    pthread_join(client_list[i].answer_thread, NULL);
   }
-  free(thread_list);
-  free(client_list);
   printf(GREEN "LISTENER END\n" END_COLOR);
 }
 
@@ -130,13 +151,12 @@ int main() {
 
   int listener_sfd, ip_addr, port;
   // список сокетов клиентов
-  inet_pton(AF_INET, IP_ADDR, &ip_addr);
-
   struct sockaddr_in listener_addr;
 
   int opt = 1;
 
   socklen_t sock_len = sizeof(listener_addr);
+  inet_pton(AF_INET, IP_ADDR, &ip_addr);
 
   listener_sfd = socket(AF_INET, SOCK_STREAM, 0);
 
