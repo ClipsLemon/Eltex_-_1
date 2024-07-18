@@ -13,15 +13,13 @@
 #define LISTEN_BACKLOG 4
 #define IP_ADDR "127.0.0.1"
 #define SIZE_BUFF 100
-#define MAX_PORT 65535
-#define SERV_PORT 9524
+#define TCP_PORT 9524
 
 int main() {
   int server_fd;
   struct sockaddr_in serv_addr;
   socklen_t serv_sock_len = sizeof(serv_addr);
   int ip_addr;
-  inet_pton(AF_INET, IP_ADDR, &ip_addr);
 
   char buff[SIZE_BUFF];
   memset(buff, 0, SIZE_BUFF);
@@ -35,8 +33,8 @@ int main() {
 
   memset(&serv_addr, 0, sizeof(serv_addr));
   serv_addr.sin_family = AF_INET;
-  serv_addr.sin_addr.s_addr = ip_addr;
-  serv_addr.sin_port = htons(SERV_PORT);
+  inet_pton(AF_INET, IP_ADDR, &serv_addr.sin_addr.s_addr);
+  serv_addr.sin_port = htons(TCP_PORT);
 
   if (connect(server_fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) ==
       -1) {

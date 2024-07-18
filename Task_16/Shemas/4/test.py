@@ -6,7 +6,9 @@ import sys
 
 # Команда для запуска сервера и клиента
 server_command = './server'
-client_command = './client'
+client_command_tcp = './client_tcp'
+client_command_udp = './client_udp'
+
 
 # Количество клиентских потоков
 num_client_threads = 1000
@@ -24,7 +26,9 @@ def run_server():
 def run_client():
     global stop_threads
     while not stop_threads:
-        client_process = subprocess.Popen(client_command, shell=True)
+        client_process = subprocess.Popen(client_command_tcp, shell=True)
+        client_process.wait()
+        client_process = subprocess.Popen(client_command_udp, shell=True)
         client_process.wait()
         if stop_threads:
             break
