@@ -1,6 +1,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netinet/in.h>
+#include <netinet/ip.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +12,7 @@
 
 #include "color.h"
 
-#define BROADCAST_IP "255.255.255.255"
+#define IP_ADDR "127.0.0.1"
 #define PORT 9234
 #define SIZE_BUFF 100
 
@@ -40,43 +41,39 @@ void *ThreadExit(void *arg) {
 }
 
 int main() {
-  int server_fd;
-  struct sockaddr_in broadcast_addr;
-  socklen_t sock_len = sizeof(broadcast_addr);
-  char buff[SIZE_BUFF];
-  int flag = 1;
-
+  int fd;
+  struct sockaddr_in address;
+  socklen_t sock_len = sizeof(address);
   pthread_t exit_thread;
+
+  char buff[SIZE_BUFF];
+  memset(buff, 0, SIZE_BUFF);
 
   if (pthread_create(&exit_thread, NULL, ThreadExit, NULL) != 0) {
     ErrorHandler("THREAD CREATE ERROR");
   }
-
-  memset(&broadcast_addr, 0, sock_len);
-
-  server_fd = socket(AF_INET, SOCK_DGRAM, 0);
-  if (server_fd == -1) {
+  fd = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
+  if (fd == -1) {
     ErrorHandler("SOCKET ERROR");
   }
-  setsockopt(server_fd, SOL_SOCKET, SO_BROADCAST, &flag, sizeof(flag));
 
-  inet_pton(AF_INET, BROADCAST_IP, &broadcast_addr.sin_addr.s_addr);
-  broadcast_addr.sin_family = AF_INET;
-  broadcast_addr.sin_port = htons(PORT);
+  memset(&address, 0, sizeof(address));
 
-  if (bind(server_fd, (struct sockaddr *)&broadcast_addr, sock_len) == -1) {
-    ErrorHandler("BIND ERROR");
-  }
+  inet_pton(AF_INET, IP_ADDR, &address.sin_addr.s_addr);
+  address.sin_family = AF_INET;
+  address.sin_port = htons(PORT);
+
+
 
   while (shtdwn) {
-    if (recvfrom(server_fd, buff, SIZE_BUFF, 0,
-                 (struct sockaddr *)&broadcast_addr, &sock_len) == -1) {
-      ErrorHandler("RECEFROM ERROR");
+    recvfrom(fd, buff, SIZE_BUFF, 0, (struct sockaddr *)&address, &sock_len);
+    for (int i = 0; i < SIZE_BUFF; i++) {
+      printf("%c", buff[i]);
     }
-    printf(GREEN "SERVER MESSAGE: %s\n" END_COLOR, buff);
-    memset(buff, 0, SIZE_BUFF);
-    sleep(1);
+    printf("\n");
   }
-  close(server_fd);
+
+  close(fd);
+
   return 0;
 }

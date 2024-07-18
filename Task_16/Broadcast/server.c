@@ -84,5 +84,6 @@ int main() {
     memset(buff, 0, SIZE_BUFF);
     sleep(1);
   }
+  close(server_fd);
   return 0;
 }

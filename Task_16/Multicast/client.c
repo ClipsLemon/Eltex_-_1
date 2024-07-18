@@ -2,7 +2,6 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
-
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -93,6 +92,8 @@ int main() {
     memset(buff, 0, SIZE_BUFF);
     sleep(1);
   }
+
+  close(server_fd);
 
   return 0;
 }
