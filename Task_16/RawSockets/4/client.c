@@ -1,60 +1,65 @@
-#include "color.h"
 #include <arpa/inet.h>
 #include <errno.h>
-#include <linux/if_ether.h>
 #include <linux/if_packet.h>
+#include <net/ethernet.h>
 #include <net/if.h>
+#include <netinet/ether.h>
+#include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
+
+#include "color.h"
 
 // запускался на ноутбуке
 
 #define SERVER_IP "192.168.1.36"
 #define CLIENT_IP "192.168.1.41"
 
-#define SERV_PORT 10000
-#define SOURCE_PORT 12000
+#define SRC_MAC "c8:e2:65:08:41:75"
+#define DST_MAC "04:7c:16:13:46:cf"
+
+#define SOURCE_PORT 2049
+#define SERV_PORT 2048
 // 100 байт на payload
 #define SIZE_BUFF 100
 // длина заголовка udp
 #define UDP_H_SIZE 8
 // длина заголовка ip
+// #define IP_H_SIZE 24
 #define IP_H_SIZE 20
+
 // длина заголовка ethernet
 #define ETH_H_SIZE 14
 
 #define TOTAL_LEN (SIZE_BUFF + UDP_H_SIZE + IP_H_SIZE + ETH_H_SIZE)
 
-#define INTERFACE_NAME "enp2s0"
+#define INTERFACE_NAME "wlp1s0"
 
-// struct ethhdr {
-//   uint8_t ether_dhost[6];
-//   uint8_t ether_shost[6];
-//   uint16_t ether_type;
-// };
+short CalculateChecksum(struct iphdr *iph) {
+  long tmp, csum = 0;
+  unsigned short *ptr = (short *)iph;
 
-void CalculateCheckSum(struct iphdr *ip_header) {
-  ip_header->check = 0;
-  uint32_t check = 0;
-  uint16_t *counter = (uint16_t *)ip_header;
-  for (int i = 0; i < 10; i++) {
-    check += counter[i];
+  for (int i = 0; i < 10; ++i) {
+    csum += *ptr;
+    ++ptr;
   }
-  while (check >> 16) {
-    check = (check & 0xFFFF) + (check >> 16);
+
+  while ((tmp = csum >> 16)) {
+    csum = (csum & 0xFFFF) + tmp;
   }
-  ip_header->check = ~check;
+
+  return ~csum;
 }
 
 void ErrorHandler(char *error_text) {
   printf(RED "%s: %s\n" END_COLOR, error_text, strerror(errno));
-  exit(EXIT_FAILURE);
+  // exit(EXIT_FAILURE);
 }
 
 int main() {
@@ -63,8 +68,8 @@ int main() {
   socklen_t sock_len = sizeof(server_addr);
   int opt = 1;
 
-  char buff[SIZE_BUFF + ETH_H_SIZE + IP_H_SIZE + UDP_H_SIZE];
-  char buff_recv[SIZE_BUFF + ETH_H_SIZE + UDP_H_SIZE + IP_H_SIZE];
+  char buff[TOTAL_LEN];
+  char buff_recv[TOTAL_LEN];
 
   struct ethhdr *eth_pack_header = (struct ethhdr *)buff;
   struct iphdr *ip_pack_header = (struct iphdr *)(buff + ETH_H_SIZE);
@@ -72,45 +77,30 @@ int main() {
       (struct updhdr *)(buff + ETH_H_SIZE + IP_H_SIZE);
 
   memset(buff, 0, SIZE_BUFF);
-
   fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
   if (fd == -1) {
     ErrorHandler("SOCKET ERROR");
   }
-
-  setsockopt(fd, IPPROTO_IP, IP_HDRINCL, &opt, sizeof(opt));
 
   memset(&server_addr, 0, sizeof(server_addr));
   memset(&client_addr, 0, sizeof(client_addr));
 
   server_addr.sll_family = AF_PACKET;
   server_addr.sll_ifindex = if_nametoindex(INTERFACE_NAME);
-  server_addr.sll_halen = 6;
+  if (server_addr.sll_ifindex == 0) {
+    ErrorHandler("INTERFACE ERROR");
+  }
+  server_addr.sll_halen = ETH_ALEN;
 
   // мак адрес компьютера
   // 04:7c:16:13:46:cf
-  server_addr.sll_addr[0] = 0x04;
-  server_addr.sll_addr[1] = 0x7C;
-  server_addr.sll_addr[2] = 0x16;
-  server_addr.sll_addr[3] = 0x13;
-  server_addr.sll_addr[4] = 0x46;
-  server_addr.sll_addr[5] = 0xCF;
+  ether_aton_r(DST_MAC, (struct ether_addr *)server_addr.sll_addr);
 
   // заполняем ethhdr для назначения
-  eth_pack_header->h_dest[0] = 0x04;
-  eth_pack_header->h_dest[1] = 0x7C;
-  eth_pack_header->h_dest[2] = 0x16;
-  eth_pack_header->h_dest[3] = 0x13;
-  eth_pack_header->h_dest[4] = 0x46;
-  eth_pack_header->h_dest[5] = 0xCF;
+  ether_aton_r(DST_MAC, (struct ether_addr *)eth_pack_header->h_dest);
 
   // заполняем ethhdr для источника
-  eth_pack_header->h_source[0] = 0xC8;
-  eth_pack_header->h_source[1] = 0xE2;
-  eth_pack_header->h_source[2] = 0x65;
-  eth_pack_header->h_source[3] = 0x08;
-  eth_pack_header->h_source[4] = 0x41;
-  eth_pack_header->h_source[5] = 0x75;
+  ether_aton_r(SRC_MAC, (struct ether_addr *)eth_pack_header->h_source);
 
   eth_pack_header->h_proto = htons(ETH_P_IP);
 
@@ -119,14 +109,13 @@ int main() {
   ip_pack_header->ihl = 5;
   ip_pack_header->protocol = IPPROTO_UDP;
   ip_pack_header->tot_len = htons(IP_H_SIZE + UDP_H_SIZE + SIZE_BUFF);
-  CalculateCheckSum(ip_pack_header);
   ip_pack_header->frag_off = 0;
-  ip_pack_header->id = 0;
   ip_pack_header->ttl = 255;
   ip_pack_header->tos = 0;
-
   inet_pton(AF_INET, CLIENT_IP, &ip_pack_header->saddr);
   inet_pton(AF_INET, SERVER_IP, &ip_pack_header->daddr);
+
+  ip_pack_header->check = CalculateChecksum(ip_pack_header);
 
   // Заполняем udp
   udp_pack_header->dest = htons(SERV_PORT);
@@ -135,7 +124,7 @@ int main() {
   udp_pack_header->check = 0;
 
   // пишем данные в payload
-  strncpy(&buff[IP_H_SIZE + UDP_H_SIZE], "Hello server!", 14);
+  strncpy(&buff[ETH_H_SIZE + IP_H_SIZE + UDP_H_SIZE], "Hello server!", 14);
   if (sendto(fd, buff, TOTAL_LEN, 0, (struct sockaddr *)&server_addr,
              sock_len) == -1) {
     ErrorHandler("SEND TO ERROR");
@@ -146,12 +135,15 @@ int main() {
                  &sock_len) == -1) {
       ErrorHandler("RECV FROM ERROR");
     }
+
     udp_pack_header = (struct udphdr *)(buff_recv + ETH_H_SIZE + IP_H_SIZE);
     if (udp_pack_header->dest == htons(SOURCE_PORT)) {
-      printf("%s\n", &buff_recv[ETH_H_SIZE + IP_H_SIZE + UDP_H_SIZE]);
+      printf("MESSAGE FROM SERVER: %s\n",
+             &buff_recv[ETH_H_SIZE + IP_H_SIZE + UDP_H_SIZE]);
       break;
     }
   }
+
   strncpy(&buff[ETH_H_SIZE + IP_H_SIZE + UDP_H_SIZE], "ACCEPT", 7);
   if (sendto(fd, buff, TOTAL_LEN, 0, (struct sockaddr *)&server_addr,
              sock_len) == -1) {
