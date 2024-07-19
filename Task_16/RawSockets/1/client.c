@@ -63,12 +63,10 @@ int main() {
   address.sin_family = AF_INET;
   address.sin_port = htons(PORT);
 
-
-
   while (shtdwn) {
     recvfrom(fd, buff, SIZE_BUFF, 0, (struct sockaddr *)&address, &sock_len);
     for (int i = 0; i < SIZE_BUFF; i++) {
-      printf("%c", buff[i]);
+      printf("%c", &buff[28]);
     }
     printf("\n");
   }

@@ -9,7 +9,7 @@
 
 #include "color.h"
 
-#define IP_ADDR "127.0.0.1"
+#define IP_ADDR "127.0.0.2"
 #define PORT 10000
 #define SIZE_BUFF 100
 
