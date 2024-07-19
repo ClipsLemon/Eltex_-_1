@@ -11,7 +11,7 @@
 
 // запускался на PC
 #define IP_ADDR "192.168.1.36"
-#define PORT 10000
+#define PORT 2048
 #define SIZE_BUFF 100
 
 void ErrorHandler(char *error_text) {
